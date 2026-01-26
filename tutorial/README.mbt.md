@@ -229,6 +229,7 @@ if update.message is Some(msg) {
     from_chat_id=msg.chat.id,
     message_id=msg.message_id,
   )
+  |> ignore()
 }
 ```
 
