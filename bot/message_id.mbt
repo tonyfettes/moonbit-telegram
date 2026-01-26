@@ -10,7 +10,9 @@ pub fn MessageId::new(message_id~ : Int) -> MessageId {
 
 ///|
 pub impl @json.ToJson for MessageId with to_json(self) {
-  let object : Map[String, Json] = { "message_id": @json.to_json(self.message_id) }
+  let object : Map[String, Json] = {
+    "message_id": @json.to_json(self.message_id),
+  }
   @json.to_json(object)
 }
 

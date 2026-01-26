@@ -18,7 +18,9 @@ pub fn Update::new(
 
 ///|
 pub impl @json.ToJson for Update with to_json(self) {
-  let object : Map[String, Json] = { "update_id": @json.to_json(self.update_id) }
+  let object : Map[String, Json] = {
+    "update_id": @json.to_json(self.update_id),
+  }
   if self.message is Some(v) {
     object["message"] = @json.to_json(v)
   }

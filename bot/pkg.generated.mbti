@@ -1,10 +1,9 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "tonyfettes/telegram/bot"
 
-import(
-  "moonbitlang/core/encoding/utf8"
-  "moonbitlang/core/json"
-)
+import {
+  "moonbitlang/core/encoding/utf8",
+}
 
 // Values
 
@@ -13,9 +12,9 @@ pub(all) suberror TelegramError {
   HttpError(code~ : Int, body~ : String)
   ApiError(code~ : Int, description~ : String)
   InvalidUtf8(@utf8.Malformed)
-  InvalidJson(@json.ParseError)
+  InvalidJson(@moonbitlang/core/json.ParseError)
   InvalidResponse(Json)
-  InvalidResult(Json, @json.JsonDecodeError)
+  InvalidResult(Json, @tonyfettes/json.JsonDecodeError)
   ParseError(message~ : String)
 }
 
@@ -41,8 +40,8 @@ pub struct BotCommand {
 pub fn BotCommand::new(command~ : String, description~ : String) -> Self
 pub impl Eq for BotCommand
 pub impl Show for BotCommand
-pub impl @json.ToJson for BotCommand
-pub impl @json.FromJson for BotCommand
+pub impl @tonyfettes/json.FromJson for BotCommand
+pub impl @tonyfettes/json.ToJson for BotCommand
 
 pub struct CallbackQuery {
   id : String
@@ -55,8 +54,8 @@ pub struct CallbackQuery {
 pub fn CallbackQuery::new(id~ : String, from~ : User, message? : Message, inline_message_id? : String, chat_instance~ : String, data? : String) -> Self
 pub impl Eq for CallbackQuery
 pub impl Show for CallbackQuery
-pub impl @json.ToJson for CallbackQuery
-pub impl @json.FromJson for CallbackQuery
+pub impl @tonyfettes/json.FromJson for CallbackQuery
+pub impl @tonyfettes/json.ToJson for CallbackQuery
 
 pub(all) struct Chat {
   id : Int64
@@ -69,8 +68,8 @@ pub(all) struct Chat {
 pub fn Chat::new(id~ : Int64, type_~ : ChatType, title? : String, username? : String, first_name? : String, last_name? : String) -> Self
 pub impl Eq for Chat
 pub impl Show for Chat
-pub impl @json.ToJson for Chat
-pub impl @json.FromJson for Chat
+pub impl @tonyfettes/json.FromJson for Chat
+pub impl @tonyfettes/json.ToJson for Chat
 
 pub(all) enum ChatType {
   Private
@@ -80,8 +79,8 @@ pub(all) enum ChatType {
 }
 pub impl Eq for ChatType
 pub impl Show for ChatType
-pub impl @json.ToJson for ChatType
-pub impl @json.FromJson for ChatType
+pub impl @tonyfettes/json.FromJson for ChatType
+pub impl @tonyfettes/json.ToJson for ChatType
 
 pub struct InlineKeyboardButton {
   text : String
@@ -91,8 +90,8 @@ pub struct InlineKeyboardButton {
 pub fn InlineKeyboardButton::new(text~ : String, url? : String, callback_data? : String) -> Self
 pub impl Eq for InlineKeyboardButton
 pub impl Show for InlineKeyboardButton
-pub impl @json.ToJson for InlineKeyboardButton
-pub impl @json.FromJson for InlineKeyboardButton
+pub impl @tonyfettes/json.FromJson for InlineKeyboardButton
+pub impl @tonyfettes/json.ToJson for InlineKeyboardButton
 
 pub struct InlineKeyboardMarkup {
   inline_keyboard : Array[Array[InlineKeyboardButton]]
@@ -100,8 +99,8 @@ pub struct InlineKeyboardMarkup {
 pub fn InlineKeyboardMarkup::new(inline_keyboard~ : Array[Array[InlineKeyboardButton]]) -> Self
 pub impl Eq for InlineKeyboardMarkup
 pub impl Show for InlineKeyboardMarkup
-pub impl @json.ToJson for InlineKeyboardMarkup
-pub impl @json.FromJson for InlineKeyboardMarkup
+pub impl @tonyfettes/json.FromJson for InlineKeyboardMarkup
+pub impl @tonyfettes/json.ToJson for InlineKeyboardMarkup
 
 pub struct Message {
   message_id : Int
@@ -115,8 +114,8 @@ pub struct Message {
 pub fn Message::new(message_id~ : Int, from? : User, date~ : Int, chat~ : Chat, text? : String, entities? : Array[MessageEntity], reply_to_message? : Self) -> Self
 pub impl Eq for Message
 pub impl Show for Message
-pub impl @json.ToJson for Message
-pub impl @json.FromJson for Message
+pub impl @tonyfettes/json.FromJson for Message
+pub impl @tonyfettes/json.ToJson for Message
 
 pub struct MessageEntity {
   type_ : String
@@ -128,8 +127,8 @@ pub struct MessageEntity {
 }
 pub impl Eq for MessageEntity
 pub impl Show for MessageEntity
-pub impl @json.ToJson for MessageEntity
-pub impl @json.FromJson for MessageEntity
+pub impl @tonyfettes/json.FromJson for MessageEntity
+pub impl @tonyfettes/json.ToJson for MessageEntity
 
 pub struct MessageId {
   message_id : Int
@@ -137,8 +136,8 @@ pub struct MessageId {
 pub fn MessageId::new(message_id~ : Int) -> Self
 pub impl Eq for MessageId
 pub impl Show for MessageId
-pub impl @json.ToJson for MessageId
-pub impl @json.FromJson for MessageId
+pub impl @tonyfettes/json.FromJson for MessageId
+pub impl @tonyfettes/json.ToJson for MessageId
 
 pub struct Update {
   update_id : Int
@@ -149,8 +148,8 @@ pub struct Update {
 pub fn Update::new(update_id~ : Int, message? : Message, edited_message? : Message, callback_query? : CallbackQuery) -> Self
 pub impl Eq for Update
 pub impl Show for Update
-pub impl @json.ToJson for Update
-pub impl @json.FromJson for Update
+pub impl @tonyfettes/json.FromJson for Update
+pub impl @tonyfettes/json.ToJson for Update
 
 pub struct User {
   id : Int64
@@ -163,8 +162,8 @@ pub struct User {
 pub fn User::new(id~ : Int64, is_bot~ : Bool, first_name~ : String, last_name? : String, username? : String, language_code? : String) -> Self
 pub impl Eq for User
 pub impl Show for User
-pub impl @json.ToJson for User
-pub impl @json.FromJson for User
+pub impl @tonyfettes/json.FromJson for User
+pub impl @tonyfettes/json.ToJson for User
 
 // Type aliases
 

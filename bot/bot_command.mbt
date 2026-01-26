@@ -9,6 +9,7 @@ pub fn BotCommand::new(command~ : String, description~ : String) -> BotCommand {
   { command, description }
 }
 
+///|
 pub impl @json.ToJson for BotCommand with to_json(self) {
   let obj : Map[String, Json] = {
     "command": @json.to_json(self.command),
@@ -17,6 +18,7 @@ pub impl @json.ToJson for BotCommand with to_json(self) {
   @json.to_json(obj)
 }
 
+///|
 pub impl @json.FromJson for BotCommand with from_json(json, path) {
   guard json is Object(obj) else {
     raise @json.JsonDecodeError(path~, "Expected object for BotCommand")

@@ -51,7 +51,8 @@ pub impl @json.FromJson for CallbackQuery with from_json(json, path) {
   } else {
     None
   }
-  let inline_message_id : String? = if object.get("inline_message_id") is Some(v) {
+  let inline_message_id : String? = if object.get("inline_message_id")
+    is Some(v) {
     Some(@json.from_json(v, path~))
   } else {
     None
