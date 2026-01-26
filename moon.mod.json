@@ -5,10 +5,10 @@
     "moonbitlang/async": "0.16.2",
     "tonyfettes/json": "0.2.2"
   },
-  "readme": "README.mbt.md",
-  "repository": "",
+  "readme": "README.md",
+  "repository": "https://github.com/tonyfettes/telegram.mbt",
   "license": "Apache-2.0",
-  "keywords": [],
-  "description": "",
+  "keywords": ["telegram", "bot", "api", "async"],
+  "description": "MoonBit Telegram Bot API library with async support",
   "preferred-target": "native"
 }
