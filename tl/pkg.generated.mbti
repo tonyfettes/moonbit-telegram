@@ -1,0 +1,88 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "tonyfettes/telegram/tl"
+
+// Values
+
+// Errors
+pub(all) suberror TLParseError {
+  UnexpectedChar(pos~ : Position, char~ : Char)
+  UnexpectedToken(pos~ : Position, expected~ : String, found~ : String)
+  UnexpectedEof(pos~ : Position)
+  InvalidHexId(pos~ : Position, value~ : String)
+  InvalidNumber(pos~ : Position, value~ : String)
+}
+pub impl Show for TLParseError
+
+// Types and methods
+type Lexer
+pub fn Lexer::new(source~ : String) -> Self
+pub fn Lexer::next_token(Self) -> Token raise TLParseError
+pub fn Lexer::tokenize(Self) -> Array[Token] raise TLParseError
+
+pub(all) struct Position {
+  line : Int
+  column : Int
+  offset : Int
+}
+pub fn Position::new(line~ : Int, column~ : Int, offset~ : Int) -> Self
+pub impl Eq for Position
+pub impl Show for Position
+
+pub(all) struct Span {
+  start : Position
+  end : Position
+}
+pub fn Span::new(start~ : Position, end~ : Position) -> Self
+pub impl Eq for Span
+pub impl Show for Span
+
+pub(all) struct Token {
+  kind : TokenKind
+  span : Span
+}
+pub impl Eq for Token
+pub impl Show for Token
+
+pub(all) enum TokenKind {
+  LowerIdent(String)
+  UpperIdent(String)
+  HexNumber(UInt)
+  Number(Int)
+  Hash
+  Colon
+  Semicolon
+  Equals
+  Question
+  Dot
+  LParen
+  RParen
+  LBracket
+  RBracket
+  LBrace
+  RBrace
+  LAngle
+  RAngle
+  Percent
+  Bang
+  Star
+  Plus
+  Comma
+  Underscore
+  TripleDash
+  Functions
+  Types
+  Final
+  New
+  Empty
+  LineComment(String)
+  BlockComment(String)
+  Eof
+}
+pub fn TokenKind::to_string(Self) -> String
+pub impl Eq for TokenKind
+pub impl Show for TokenKind
+
+// Type aliases
+
+// Traits
+
