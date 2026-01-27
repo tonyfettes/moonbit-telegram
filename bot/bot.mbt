@@ -281,3 +281,177 @@ pub async fn Bot::set_my_commands(
   }
   parse_api_response(data)
 }
+
+///|
+/// Use this method to send photos.
+/// On success, the sent Message is returned.
+pub async fn Bot::send_photo(
+  self : Bot,
+  chat_id~ : Int64,
+  photo~ : String,
+  business_connection_id? : String,
+  message_thread_id? : Int,
+  caption? : String,
+  parse_mode? : String,
+  caption_entities? : Array[MessageEntity],
+  show_caption_above_media? : Bool,
+  has_spoiler? : Bool,
+  disable_notification? : Bool,
+  protect_content? : Bool,
+  allow_paid_broadcast? : Bool,
+  message_effect_id? : String,
+  reply_parameters? : ReplyParameters,
+  reply_markup? : InlineKeyboardMarkup,
+) -> Message raise TelegramError {
+  let url = self.api_url("sendPhoto")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "photo": @json.to_json(photo),
+  }
+  if business_connection_id is Some(v) {
+    body["business_connection_id"] = @json.to_json(v)
+  }
+  if message_thread_id is Some(v) {
+    body["message_thread_id"] = @json.to_json(v)
+  }
+  if caption is Some(v) {
+    body["caption"] = @json.to_json(v)
+  }
+  if parse_mode is Some(v) {
+    body["parse_mode"] = @json.to_json(v)
+  }
+  if caption_entities is Some(v) {
+    body["caption_entities"] = @json.ToJson::to_json(v)
+  }
+  if show_caption_above_media is Some(v) {
+    body["show_caption_above_media"] = @json.to_json(v)
+  }
+  if has_spoiler is Some(v) {
+    body["has_spoiler"] = @json.to_json(v)
+  }
+  if disable_notification is Some(v) {
+    body["disable_notification"] = @json.to_json(v)
+  }
+  if protect_content is Some(v) {
+    body["protect_content"] = @json.to_json(v)
+  }
+  if allow_paid_broadcast is Some(v) {
+    body["allow_paid_broadcast"] = @json.to_json(v)
+  }
+  if message_effect_id is Some(v) {
+    body["message_effect_id"] = @json.to_json(v)
+  }
+  if reply_parameters is Some(v) {
+    body["reply_parameters"] = @json.to_json(v)
+  }
+  if reply_markup is Some(v) {
+    body["reply_markup"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to send video files.
+/// On success, the sent Message is returned.
+pub async fn Bot::send_video(
+  self : Bot,
+  chat_id~ : Int64,
+  video~ : String,
+  business_connection_id? : String,
+  message_thread_id? : Int,
+  duration? : Int,
+  width? : Int,
+  height? : Int,
+  thumbnail? : String,
+  caption? : String,
+  parse_mode? : String,
+  caption_entities? : Array[MessageEntity],
+  show_caption_above_media? : Bool,
+  has_spoiler? : Bool,
+  supports_streaming? : Bool,
+  disable_notification? : Bool,
+  protect_content? : Bool,
+  allow_paid_broadcast? : Bool,
+  message_effect_id? : String,
+  reply_parameters? : ReplyParameters,
+  reply_markup? : InlineKeyboardMarkup,
+) -> Message raise TelegramError {
+  let url = self.api_url("sendVideo")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "video": @json.to_json(video),
+  }
+  if business_connection_id is Some(v) {
+    body["business_connection_id"] = @json.to_json(v)
+  }
+  if message_thread_id is Some(v) {
+    body["message_thread_id"] = @json.to_json(v)
+  }
+  if duration is Some(v) {
+    body["duration"] = @json.to_json(v)
+  }
+  if width is Some(v) {
+    body["width"] = @json.to_json(v)
+  }
+  if height is Some(v) {
+    body["height"] = @json.to_json(v)
+  }
+  if thumbnail is Some(v) {
+    body["thumbnail"] = @json.to_json(v)
+  }
+  if caption is Some(v) {
+    body["caption"] = @json.to_json(v)
+  }
+  if parse_mode is Some(v) {
+    body["parse_mode"] = @json.to_json(v)
+  }
+  if caption_entities is Some(v) {
+    body["caption_entities"] = @json.ToJson::to_json(v)
+  }
+  if show_caption_above_media is Some(v) {
+    body["show_caption_above_media"] = @json.to_json(v)
+  }
+  if has_spoiler is Some(v) {
+    body["has_spoiler"] = @json.to_json(v)
+  }
+  if supports_streaming is Some(v) {
+    body["supports_streaming"] = @json.to_json(v)
+  }
+  if disable_notification is Some(v) {
+    body["disable_notification"] = @json.to_json(v)
+  }
+  if protect_content is Some(v) {
+    body["protect_content"] = @json.to_json(v)
+  }
+  if allow_paid_broadcast is Some(v) {
+    body["allow_paid_broadcast"] = @json.to_json(v)
+  }
+  if message_effect_id is Some(v) {
+    body["message_effect_id"] = @json.to_json(v)
+  }
+  if reply_parameters is Some(v) {
+    body["reply_parameters"] = @json.to_json(v)
+  }
+  if reply_markup is Some(v) {
+    body["reply_markup"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
