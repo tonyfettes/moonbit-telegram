@@ -2262,3 +2262,87 @@ pub async fn Bot::get_chat(
   }
   parse_api_response(data)
 }
+
+///|
+/// Use this method to send static .WEBP, animated .TGS, or video .WEBM stickers.
+/// On success, the sent Message is returned.
+pub async fn Bot::send_sticker(
+  self : Bot,
+  chat_id~ : Int64,
+  sticker~ : String,
+  business_connection_id? : String,
+  message_thread_id? : Int,
+  emoji? : String,
+  disable_notification? : Bool,
+  protect_content? : Bool,
+  allow_paid_broadcast? : Bool,
+  message_effect_id? : String,
+  reply_parameters? : ReplyParameters,
+  reply_markup? : InlineKeyboardMarkup,
+) -> Message raise TelegramError {
+  let url = self.api_url("sendSticker")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "sticker": @json.to_json(sticker),
+  }
+  if business_connection_id is Some(v) {
+    body["business_connection_id"] = @json.to_json(v)
+  }
+  if message_thread_id is Some(v) {
+    body["message_thread_id"] = @json.to_json(v)
+  }
+  if emoji is Some(v) {
+    body["emoji"] = @json.to_json(v)
+  }
+  if disable_notification is Some(v) {
+    body["disable_notification"] = @json.to_json(v)
+  }
+  if protect_content is Some(v) {
+    body["protect_content"] = @json.to_json(v)
+  }
+  if allow_paid_broadcast is Some(v) {
+    body["allow_paid_broadcast"] = @json.to_json(v)
+  }
+  if message_effect_id is Some(v) {
+    body["message_effect_id"] = @json.to_json(v)
+  }
+  if reply_parameters is Some(v) {
+    body["reply_parameters"] = @json.to_json(v)
+  }
+  if reply_markup is Some(v) {
+    body["reply_markup"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to get information about custom emoji stickers by their identifiers.
+/// Returns an Array of Sticker objects.
+pub async fn Bot::get_custom_emoji_stickers(
+  self : Bot,
+  custom_emoji_ids~ : Array[String],
+) -> Array[Sticker] raise TelegramError {
+  let url = self.api_url("getCustomEmojiStickers")
+  let body : Map[String, Json] = {
+    "custom_emoji_ids": @json.to_json(custom_emoji_ids),
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
