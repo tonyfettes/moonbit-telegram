@@ -98,7 +98,7 @@ pub fn Parser::parse_schema(self : Parser) -> Schema raise TLParseError {
         }
         if self.peek() is TripleDash {
           let _ = self.advance()
-           // trailing ---
+          // trailing ---
         }
       }
       Final | New | Empty => {
