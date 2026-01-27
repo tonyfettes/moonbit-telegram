@@ -1,5 +1,5 @@
 ///|
-pub struct Position {
+pub(all) struct Position {
   line : Int
   column : Int
   offset : Int
@@ -11,7 +11,7 @@ pub fn Position::new(line~ : Int, column~ : Int, offset~ : Int) -> Position {
 }
 
 ///|
-pub struct Span {
+pub(all) struct Span {
   start : Position
   end : Position
 } derive(Show, Eq)

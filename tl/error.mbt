@@ -1,12 +1,4 @@
 ///|
-/// Placeholder until position.mbt is merged
-pub(all) struct Position {
-  line : Int
-  column : Int
-  offset : Int
-} derive(Show, Eq)
-
-///|
 pub(all) suberror TLParseError {
   UnexpectedChar(pos~ : Position, char~ : Char)
   UnexpectedToken(pos~ : Position, expected~ : String, found~ : String)

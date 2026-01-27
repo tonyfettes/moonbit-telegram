@@ -1,19 +1,4 @@
 ///|
-/// Position in the source text.
-pub(all) struct Position {
-  line : Int
-  column : Int
-  offset : Int
-} derive(Show, Eq)
-
-///|
-/// Span representing a range in the source text.
-pub(all) struct Span {
-  start : Position
-  end : Position
-} derive(Show, Eq)
-
-///|
 /// Token kinds for the TL lexer.
 pub(all) enum TokenKind {
   // Identifiers
