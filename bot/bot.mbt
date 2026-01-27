@@ -1598,3 +1598,220 @@ pub async fn Bot::forward_messages(
   }
   parse_api_response(data)
 }
+
+///|
+/// Use this method to ban a user in a group, a supergroup or a channel.
+/// In the case of supergroups and channels, the user will not be able to return
+/// to the chat on their own using invite links, etc., unless unbanned first.
+/// Returns True on success.
+pub async fn Bot::ban_chat_member(
+  self : Bot,
+  chat_id~ : Int64,
+  user_id~ : Int64,
+  until_date? : Int,
+  revoke_messages? : Bool,
+) -> Bool raise TelegramError {
+  let url = self.api_url("banChatMember")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "user_id": @json.to_json(user_id),
+  }
+  if until_date is Some(v) {
+    body["until_date"] = @json.to_json(v)
+  }
+  if revoke_messages is Some(v) {
+    body["revoke_messages"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to unban a previously banned user in a supergroup or channel.
+/// The user will not return to the group or channel automatically, but will be
+/// able to join via link, etc. The bot must be an administrator for this to work.
+/// Returns True on success.
+pub async fn Bot::unban_chat_member(
+  self : Bot,
+  chat_id~ : Int64,
+  user_id~ : Int64,
+  only_if_banned? : Bool,
+) -> Bool raise TelegramError {
+  let url = self.api_url("unbanChatMember")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "user_id": @json.to_json(user_id),
+  }
+  if only_if_banned is Some(v) {
+    body["only_if_banned"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to restrict a user in a supergroup.
+/// The bot must be an administrator in the supergroup for this to work
+/// and must have the appropriate administrator rights.
+/// Returns True on success.
+pub async fn Bot::restrict_chat_member(
+  self : Bot,
+  chat_id~ : Int64,
+  user_id~ : Int64,
+  permissions~ : ChatPermissions,
+  use_independent_chat_permissions? : Bool,
+  until_date? : Int,
+) -> Bool raise TelegramError {
+  let url = self.api_url("restrictChatMember")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "user_id": @json.to_json(user_id),
+    "permissions": @json.to_json(permissions),
+  }
+  if use_independent_chat_permissions is Some(v) {
+    body["use_independent_chat_permissions"] = @json.to_json(v)
+  }
+  if until_date is Some(v) {
+    body["until_date"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to promote or demote a user in a supergroup or a channel.
+/// The bot must be an administrator in the chat for this to work
+/// and must have the appropriate administrator rights.
+/// Returns True on success.
+pub async fn Bot::promote_chat_member(
+  self : Bot,
+  chat_id~ : Int64,
+  user_id~ : Int64,
+  is_anonymous? : Bool,
+  can_manage_chat? : Bool,
+  can_delete_messages? : Bool,
+  can_manage_video_chats? : Bool,
+  can_restrict_members? : Bool,
+  can_promote_members? : Bool,
+  can_change_info? : Bool,
+  can_invite_users? : Bool,
+  can_post_stories? : Bool,
+  can_edit_stories? : Bool,
+  can_delete_stories? : Bool,
+  can_post_messages? : Bool,
+  can_edit_messages? : Bool,
+  can_pin_messages? : Bool,
+  can_manage_topics? : Bool,
+) -> Bool raise TelegramError {
+  let url = self.api_url("promoteChatMember")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "user_id": @json.to_json(user_id),
+  }
+  if is_anonymous is Some(v) {
+    body["is_anonymous"] = @json.to_json(v)
+  }
+  if can_manage_chat is Some(v) {
+    body["can_manage_chat"] = @json.to_json(v)
+  }
+  if can_delete_messages is Some(v) {
+    body["can_delete_messages"] = @json.to_json(v)
+  }
+  if can_manage_video_chats is Some(v) {
+    body["can_manage_video_chats"] = @json.to_json(v)
+  }
+  if can_restrict_members is Some(v) {
+    body["can_restrict_members"] = @json.to_json(v)
+  }
+  if can_promote_members is Some(v) {
+    body["can_promote_members"] = @json.to_json(v)
+  }
+  if can_change_info is Some(v) {
+    body["can_change_info"] = @json.to_json(v)
+  }
+  if can_invite_users is Some(v) {
+    body["can_invite_users"] = @json.to_json(v)
+  }
+  if can_post_stories is Some(v) {
+    body["can_post_stories"] = @json.to_json(v)
+  }
+  if can_edit_stories is Some(v) {
+    body["can_edit_stories"] = @json.to_json(v)
+  }
+  if can_delete_stories is Some(v) {
+    body["can_delete_stories"] = @json.to_json(v)
+  }
+  if can_post_messages is Some(v) {
+    body["can_post_messages"] = @json.to_json(v)
+  }
+  if can_edit_messages is Some(v) {
+    body["can_edit_messages"] = @json.to_json(v)
+  }
+  if can_pin_messages is Some(v) {
+    body["can_pin_messages"] = @json.to_json(v)
+  }
+  if can_manage_topics is Some(v) {
+    body["can_manage_topics"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to set a custom title for an administrator in a supergroup
+/// promoted by the bot. Returns True on success.
+pub async fn Bot::set_chat_administrator_custom_title(
+  self : Bot,
+  chat_id~ : Int64,
+  user_id~ : Int64,
+  custom_title~ : String,
+) -> Bool raise TelegramError {
+  let url = self.api_url("setChatAdministratorCustomTitle")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "user_id": @json.to_json(user_id),
+    "custom_title": @json.to_json(custom_title),
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
