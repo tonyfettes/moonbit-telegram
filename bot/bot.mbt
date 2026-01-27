@@ -3120,3 +3120,338 @@ pub async fn Bot::get_user_profile_photos(
   }
   parse_api_response(data)
 }
+
+///|
+/// Use this method to delete the list of the bot's commands for the given scope and user language.
+/// After deletion, higher level commands will be shown to affected users.
+/// Returns True on success.
+pub async fn Bot::delete_my_commands(
+  self : Bot,
+  scope? : Json,
+  language_code? : String,
+) -> Bool raise TelegramError {
+  let url = self.api_url("deleteMyCommands")
+  let body : Map[String, Json] = {}
+  if scope is Some(v) {
+    body["scope"] = v
+  }
+  if language_code is Some(v) {
+    body["language_code"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to get the current list of the bot's commands for the given scope and user language.
+/// Returns an Array of BotCommand objects.
+/// If commands aren't set, an empty list is returned.
+pub async fn Bot::get_my_commands(
+  self : Bot,
+  scope? : Json,
+  language_code? : String,
+) -> Array[BotCommand] raise TelegramError {
+  let url = self.api_url("getMyCommands")
+  let body : Map[String, Json] = {}
+  if scope is Some(v) {
+    body["scope"] = v
+  }
+  if language_code is Some(v) {
+    body["language_code"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to change the bot's name.
+/// Returns True on success.
+pub async fn Bot::set_my_name(
+  self : Bot,
+  name? : String,
+  language_code? : String,
+) -> Bool raise TelegramError {
+  let url = self.api_url("setMyName")
+  let body : Map[String, Json] = {}
+  if name is Some(v) {
+    body["name"] = @json.to_json(v)
+  }
+  if language_code is Some(v) {
+    body["language_code"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to get the current bot name for the given user language.
+/// Returns BotName on success.
+pub async fn Bot::get_my_name(
+  self : Bot,
+  language_code? : String,
+) -> Json raise TelegramError {
+  let url = self.api_url("getMyName")
+  let body : Map[String, Json] = {}
+  if language_code is Some(v) {
+    body["language_code"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to change the bot's description, which is shown in the chat with the bot if the chat is empty.
+/// Returns True on success.
+pub async fn Bot::set_my_description(
+  self : Bot,
+  description? : String,
+  language_code? : String,
+) -> Bool raise TelegramError {
+  let url = self.api_url("setMyDescription")
+  let body : Map[String, Json] = {}
+  if description is Some(v) {
+    body["description"] = @json.to_json(v)
+  }
+  if language_code is Some(v) {
+    body["language_code"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to get the current bot description for the given user language.
+/// Returns BotDescription on success.
+pub async fn Bot::get_my_description(
+  self : Bot,
+  language_code? : String,
+) -> Json raise TelegramError {
+  let url = self.api_url("getMyDescription")
+  let body : Map[String, Json] = {}
+  if language_code is Some(v) {
+    body["language_code"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to change the bot's short description, which is shown on the bot's profile page
+/// and is sent together with the link when users share the bot.
+/// Returns True on success.
+pub async fn Bot::set_my_short_description(
+  self : Bot,
+  short_description? : String,
+  language_code? : String,
+) -> Bool raise TelegramError {
+  let url = self.api_url("setMyShortDescription")
+  let body : Map[String, Json] = {}
+  if short_description is Some(v) {
+    body["short_description"] = @json.to_json(v)
+  }
+  if language_code is Some(v) {
+    body["language_code"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to get the current bot short description for the given user language.
+/// Returns BotShortDescription on success.
+pub async fn Bot::get_my_short_description(
+  self : Bot,
+  language_code? : String,
+) -> Json raise TelegramError {
+  let url = self.api_url("getMyShortDescription")
+  let body : Map[String, Json] = {}
+  if language_code is Some(v) {
+    body["language_code"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to change the bot's menu button in a private chat, or the default menu button.
+/// Returns True on success.
+pub async fn Bot::set_chat_menu_button(
+  self : Bot,
+  chat_id? : Int64,
+  menu_button? : Json,
+) -> Bool raise TelegramError {
+  let url = self.api_url("setChatMenuButton")
+  let body : Map[String, Json] = {}
+  if chat_id is Some(v) {
+    body["chat_id"] = @json.to_json(v)
+  }
+  if menu_button is Some(v) {
+    body["menu_button"] = v
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to get the current value of the bot's menu button in a private chat, or the default menu button.
+/// Returns MenuButton on success.
+pub async fn Bot::get_chat_menu_button(
+  self : Bot,
+  chat_id? : Int64,
+) -> Json raise TelegramError {
+  let url = self.api_url("getChatMenuButton")
+  let body : Map[String, Json] = {}
+  if chat_id is Some(v) {
+    body["chat_id"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to get a list of administrators in a chat, which aren't bots.
+/// Returns an Array of ChatMember objects.
+pub async fn Bot::get_chat_administrators(
+  self : Bot,
+  chat_id~ : ChatId,
+) -> Array[Json] raise TelegramError {
+  let url = self.api_url("getChatAdministrators")
+  let body : Map[String, Json] = { "chat_id": @json.to_json(chat_id) }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to get the number of members in a chat.
+/// Returns Int on success.
+pub async fn Bot::get_chat_member_count(
+  self : Bot,
+  chat_id~ : ChatId,
+) -> Int raise TelegramError {
+  let url = self.api_url("getChatMemberCount")
+  let body : Map[String, Json] = { "chat_id": @json.to_json(chat_id) }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to get information about a member of a chat.
+/// The method is only guaranteed to work for other users if the bot is an administrator in the chat.
+/// Returns a ChatMember object on success.
+pub async fn Bot::get_chat_member(
+  self : Bot,
+  chat_id~ : ChatId,
+  user_id~ : Int64,
+) -> Json raise TelegramError {
+  let url = self.api_url("getChatMember")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "user_id": @json.to_json(user_id),
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
