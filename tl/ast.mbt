@@ -1,34 +1,4 @@
 ///|
-// Placeholder types until expr.mbt is merged
-pub(all) struct TypeIdent {
-  ns : String? // namespace
-  name : String
-} derive(Show, Eq)
-
-///|
-pub(all) enum TypeExpr {
-  Ident(TypeIdent)
-  Bang(TypeExpr)
-  Percent(TypeExpr)
-  Apply(TypeIdent, Array[TypeExpr])
-  Var(String)
-  Nat
-} derive(Show, Eq)
-
-///|
-pub(all) enum NatExpr {
-  Const(Int)
-  Var(String)
-  Add(NatExpr, NatExpr)
-} derive(Show, Eq)
-
-///|
-pub(all) enum Expr {
-  Type(TypeExpr)
-  Nat(NatExpr)
-} derive(Show, Eq)
-
-///|
 /// Conditional field specifier (e.g., flags.N? or flags?)
 pub(all) struct Conditional {
   var_name : String // "flags", "flags2"
