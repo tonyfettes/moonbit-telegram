@@ -1,54 +1,10 @@
 ///|
-pub struct PhotoSizePlaceholder {
-  file_id : String
-  file_unique_id : String
-  width : Int
-  height : Int
-} derive(Show, Eq)
-
-///|
-pub fn PhotoSizePlaceholder::new(
-  file_id~ : String,
-  file_unique_id~ : String,
-  width~ : Int,
-  height~ : Int,
-) -> PhotoSizePlaceholder {
-  { file_id, file_unique_id, width, height }
-}
-
-///|
-pub impl @json.ToJson for PhotoSizePlaceholder with to_json(self) {
-  let obj : Map[String, Json] = {
-    "file_id": @json.to_json(self.file_id),
-    "file_unique_id": @json.to_json(self.file_unique_id),
-    "width": @json.to_json(self.width),
-    "height": @json.to_json(self.height),
-  }
-  @json.to_json(obj)
-}
-
-///|
-pub impl @json.FromJson for PhotoSizePlaceholder with from_json(json, path) {
-  guard json is Object(obj) else {
-    raise @json.JsonDecodeError(
-      path~,
-      "Expected object for PhotoSizePlaceholder",
-    )
-  }
-  let file_id : String = @json.from_json(obj["file_id"], path~)
-  let file_unique_id : String = @json.from_json(obj["file_unique_id"], path~)
-  let width : Int = @json.from_json(obj["width"], path~)
-  let height : Int = @json.from_json(obj["height"], path~)
-  { file_id, file_unique_id, width, height }
-}
-
-///|
 pub struct SharedUser {
   user_id : Int64
   first_name : String?
   last_name : String?
   username : String?
-  photo : Array[PhotoSizePlaceholder]?
+  photo : Array[PhotoSize]?
 } derive(Show, Eq)
 
 ///|
@@ -57,7 +13,7 @@ pub fn SharedUser::new(
   first_name? : String,
   last_name? : String,
   username? : String,
-  photo? : Array[PhotoSizePlaceholder],
+  photo? : Array[PhotoSize],
 ) -> SharedUser {
   { user_id, first_name, last_name, username, photo }
 }
@@ -101,7 +57,7 @@ pub impl @json.FromJson for SharedUser with from_json(json, path) {
   } else {
     None
   }
-  let photo : Array[PhotoSizePlaceholder]? = if obj.get("photo") is Some(v) {
+  let photo : Array[PhotoSize]? = if obj.get("photo") is Some(v) {
     Some(@json.from_json(v, path~))
   } else {
     None
@@ -148,7 +104,7 @@ pub struct ChatShared {
   chat_id : Int64
   title : String?
   username : String?
-  photo : Array[PhotoSizePlaceholder]?
+  photo : Array[PhotoSize]?
 } derive(Show, Eq)
 
 ///|
@@ -157,7 +113,7 @@ pub fn ChatShared::new(
   chat_id~ : Int64,
   title? : String,
   username? : String,
-  photo? : Array[PhotoSizePlaceholder],
+  photo? : Array[PhotoSize],
 ) -> ChatShared {
   { request_id, chat_id, title, username, photo }
 }
@@ -197,7 +153,7 @@ pub impl @json.FromJson for ChatShared with from_json(json, path) {
   } else {
     None
   }
-  let photo : Array[PhotoSizePlaceholder]? = if obj.get("photo") is Some(v) {
+  let photo : Array[PhotoSize]? = if obj.get("photo") is Some(v) {
     Some(@json.from_json(v, path~))
   } else {
     None

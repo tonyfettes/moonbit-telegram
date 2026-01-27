@@ -24,7 +24,7 @@ test "PaidMediaPreview empty JSON round-trip" {
 
 ///|
 test "PaidMediaPhoto JSON round-trip" {
-  let photo_size = PhotoSizePlaceholder::new(
+  let photo_size = PhotoSize::new(
     file_id="photo123",
     file_unique_id="unique123",
     width=800,
@@ -42,7 +42,7 @@ test "PaidMediaPhoto JSON round-trip" {
 
 ///|
 test "PaidMediaVideo JSON round-trip" {
-  let video = VideoPlaceholder::new(
+  let video = Video::new(
     file_id="video456",
     file_unique_id="unique456",
     width=1920,
@@ -63,7 +63,7 @@ test "PaidMediaVideo JSON round-trip" {
 ///|
 test "PaidMediaInfo JSON round-trip" {
   let preview = PaidMediaPreview::new(width=320, height=240)
-  let video = VideoPlaceholder::new(
+  let video = Video::new(
     file_id="vid789",
     file_unique_id="uniq789",
     width=1280,
@@ -89,15 +89,15 @@ test "PaidMediaInfo JSON round-trip" {
 }
 
 ///|
-test "PhotoSizePlaceholder JSON round-trip" {
-  let photo = PhotoSizePlaceholder::new(
+test "PhotoSize JSON round-trip" {
+  let photo = PhotoSize::new(
     file_id="file123",
     file_unique_id="unique123",
     width=100,
     height=200,
   )
   let json = @json.to_json(photo)
-  let parsed : PhotoSizePlaceholder = @json.from_json(json)
+  let parsed : PhotoSize = @json.from_json(json)
   inspect(parsed.file_id, content="file123")
   inspect(parsed.file_unique_id, content="unique123")
   inspect(parsed.width, content="100")
@@ -105,8 +105,8 @@ test "PhotoSizePlaceholder JSON round-trip" {
 }
 
 ///|
-test "VideoPlaceholder JSON round-trip" {
-  let video = VideoPlaceholder::new(
+test "Video JSON round-trip" {
+  let video = Video::new(
     file_id="vidfile",
     file_unique_id="vidunique",
     width=1920,
@@ -114,7 +114,7 @@ test "VideoPlaceholder JSON round-trip" {
     duration=300,
   )
   let json = @json.to_json(video)
-  let parsed : VideoPlaceholder = @json.from_json(json)
+  let parsed : Video = @json.from_json(json)
   inspect(parsed.file_id, content="vidfile")
   inspect(parsed.file_unique_id, content="vidunique")
   inspect(parsed.width, content="1920")

@@ -1,48 +1,4 @@
 ///|
-pub struct PhotoSizePlaceholder {
-  file_id : String
-  file_unique_id : String
-  width : Int
-  height : Int
-} derive(Show, Eq)
-
-///|
-pub fn PhotoSizePlaceholder::new(
-  file_id~ : String,
-  file_unique_id~ : String,
-  width~ : Int,
-  height~ : Int,
-) -> PhotoSizePlaceholder {
-  { file_id, file_unique_id, width, height }
-}
-
-///|
-pub impl @json.ToJson for PhotoSizePlaceholder with to_json(self) {
-  let obj : Map[String, Json] = {
-    "file_id": @json.to_json(self.file_id),
-    "file_unique_id": @json.to_json(self.file_unique_id),
-    "width": @json.to_json(self.width),
-    "height": @json.to_json(self.height),
-  }
-  @json.to_json(obj)
-}
-
-///|
-pub impl @json.FromJson for PhotoSizePlaceholder with from_json(json, path) {
-  guard json is Object(obj) else {
-    raise @json.JsonDecodeError(
-      path~,
-      "Expected object for PhotoSizePlaceholder",
-    )
-  }
-  let file_id : String = @json.from_json(obj["file_id"], path~)
-  let file_unique_id : String = @json.from_json(obj["file_unique_id"], path~)
-  let width : Int = @json.from_json(obj["width"], path~)
-  let height : Int = @json.from_json(obj["height"], path~)
-  { file_id, file_unique_id, width, height }
-}
-
-///|
 pub struct FilePlaceholder {
   file_id : String
   file_unique_id : String
@@ -125,7 +81,7 @@ pub struct Sticker {
   height : Int
   is_animated : Bool
   is_video : Bool
-  thumbnail : PhotoSizePlaceholder?
+  thumbnail : PhotoSize?
   emoji : String?
   set_name : String?
   premium_animation : FilePlaceholder?
@@ -144,7 +100,7 @@ pub fn Sticker::new(
   height~ : Int,
   is_animated~ : Bool,
   is_video~ : Bool,
-  thumbnail? : PhotoSizePlaceholder,
+  thumbnail? : PhotoSize,
   emoji? : String,
   set_name? : String,
   premium_animation? : FilePlaceholder,
@@ -222,7 +178,7 @@ pub impl @json.FromJson for Sticker with from_json(json, path) {
   let height : Int = @json.from_json(obj["height"], path~)
   let is_animated : Bool = @json.from_json(obj["is_animated"], path~)
   let is_video : Bool = @json.from_json(obj["is_video"], path~)
-  let thumbnail : PhotoSizePlaceholder? = if obj.get("thumbnail") is Some(v) {
+  let thumbnail : PhotoSize? = if obj.get("thumbnail") is Some(v) {
     Some(@json.from_json(v, path~))
   } else {
     None
@@ -288,7 +244,7 @@ pub struct StickerSet {
   title : String
   sticker_type : String
   stickers : Array[Sticker]
-  thumbnail : PhotoSizePlaceholder?
+  thumbnail : PhotoSize?
 } derive(Show, Eq)
 
 ///|
@@ -297,7 +253,7 @@ pub fn StickerSet::new(
   title~ : String,
   sticker_type~ : String,
   stickers~ : Array[Sticker],
-  thumbnail? : PhotoSizePlaceholder,
+  thumbnail? : PhotoSize,
 ) -> StickerSet {
   { name, title, sticker_type, stickers, thumbnail }
 }
@@ -325,7 +281,7 @@ pub impl @json.FromJson for StickerSet with from_json(json, path) {
   let title : String = @json.from_json(obj["title"], path~)
   let sticker_type : String = @json.from_json(obj["sticker_type"], path~)
   let stickers : Array[Sticker] = @json.from_json(obj["stickers"], path~)
-  let thumbnail : PhotoSizePlaceholder? = if obj.get("thumbnail") is Some(v) {
+  let thumbnail : PhotoSize? = if obj.get("thumbnail") is Some(v) {
     Some(@json.from_json(v, path~))
   } else {
     None

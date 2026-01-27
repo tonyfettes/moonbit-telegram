@@ -1,13 +1,13 @@
 ///|
-test "PhotoSizePlaceholder JSON round-trip" {
-  let photo = PhotoSizePlaceholder::new(
+test "PhotoSize JSON round-trip" {
+  let photo = PhotoSize::new(
     file_id="photo123",
     file_unique_id="unique456",
     width=640,
     height=480,
   )
   let json = @json.to_json(photo)
-  let parsed : PhotoSizePlaceholder = @json.from_json(json)
+  let parsed : PhotoSize = @json.from_json(json)
   inspect(parsed.file_id, content="photo123")
   inspect(parsed.file_unique_id, content="unique456")
   inspect(parsed.width, content="640")
@@ -33,7 +33,7 @@ test "SharedUser JSON round-trip" {
 
 ///|
 test "SharedUser with photo JSON round-trip" {
-  let photo = PhotoSizePlaceholder::new(
+  let photo = PhotoSize::new(
     file_id="photo123",
     file_unique_id="unique456",
     width=640,

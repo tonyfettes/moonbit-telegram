@@ -1,29 +1,4 @@
 ///|
-pub struct WebAppInfo {
-  url : String
-} derive(Show, Eq)
-
-///|
-pub fn WebAppInfo::new(url~ : String) -> WebAppInfo {
-  { url, }
-}
-
-///|
-pub impl @json.ToJson for WebAppInfo with to_json(self) {
-  let obj : Map[String, Json] = { "url": @json.to_json(self.url) }
-  @json.to_json(obj)
-}
-
-///|
-pub impl @json.FromJson for WebAppInfo with from_json(json, path) {
-  guard json is Object(obj) else {
-    raise @json.JsonDecodeError(path~, "Expected object for WebAppInfo")
-  }
-  let url : String = @json.from_json(obj["url"], path~)
-  { url, }
-}
-
-///|
 pub struct KeyboardButtonPollType {
   type_ : String?
 } derive(Show, Eq)

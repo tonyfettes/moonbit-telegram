@@ -1,13 +1,13 @@
 ///|
-test "PhotoSizePlaceholder JSON round-trip" {
-  let photo = PhotoSizePlaceholder::new(
+test "PhotoSize JSON round-trip" {
+  let photo = PhotoSize::new(
     file_id="photo123",
     file_unique_id="unique456",
     width=100,
     height=200,
   )
   let json = @json.to_json(photo)
-  let parsed : PhotoSizePlaceholder = @json.from_json(json)
+  let parsed : PhotoSize = @json.from_json(json)
   inspect(parsed.file_id, content="photo123")
   inspect(parsed.file_unique_id, content="unique456")
   inspect(parsed.width, content="100")
@@ -65,7 +65,7 @@ test "Sticker JSON round-trip minimal" {
 
 ///|
 test "Sticker JSON round-trip with optionals" {
-  let thumbnail = PhotoSizePlaceholder::new(
+  let thumbnail = PhotoSize::new(
     file_id="thumb123",
     file_unique_id="thumbunique",
     width=128,
@@ -153,7 +153,7 @@ test "StickerSet JSON round-trip with thumbnail" {
     is_animated=true,
     is_video=false,
   )
-  let thumb = PhotoSizePlaceholder::new(
+  let thumb = PhotoSize::new(
     file_id="thumb_id",
     file_unique_id="thumb_unique",
     width=64,
