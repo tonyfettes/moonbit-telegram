@@ -1,6 +1,6 @@
 ///|
-test "InputLinkPreviewOptions JSON round-trip" {
-  let obj = InputLinkPreviewOptions::new(
+test "LinkPreviewOptions JSON round-trip" {
+  let obj = LinkPreviewOptions::new(
     is_disabled=true,
     url="https://example.com",
     prefer_small_media=false,
@@ -8,7 +8,7 @@ test "InputLinkPreviewOptions JSON round-trip" {
     show_above_text=false,
   )
   let json = @json.to_json(obj)
-  let parsed : InputLinkPreviewOptions = @json.from_json(json)
+  let parsed : LinkPreviewOptions = @json.from_json(json)
   inspect(parsed.is_disabled, content="Some(true)")
   inspect(parsed.url, content="Some(\"https://example.com\")")
   inspect(parsed.prefer_small_media, content="Some(false)")
@@ -17,10 +17,10 @@ test "InputLinkPreviewOptions JSON round-trip" {
 }
 
 ///|
-test "InputLinkPreviewOptions empty JSON round-trip" {
-  let obj = InputLinkPreviewOptions::new()
+test "LinkPreviewOptions empty JSON round-trip" {
+  let obj = LinkPreviewOptions::new()
   let json = @json.to_json(obj)
-  let parsed : InputLinkPreviewOptions = @json.from_json(json)
+  let parsed : LinkPreviewOptions = @json.from_json(json)
   inspect(parsed.is_disabled, content="None")
   inspect(parsed.url, content="None")
 }
@@ -53,7 +53,7 @@ test "InputTextMessageContent with entities JSON round-trip" {
 
 ///|
 test "InputTextMessageContent with link_preview_options JSON round-trip" {
-  let options = InputLinkPreviewOptions::new(is_disabled=true)
+  let options = LinkPreviewOptions::new(is_disabled=true)
   let obj = InputTextMessageContent::new(
     message_text="Check this out",
     link_preview_options=options,

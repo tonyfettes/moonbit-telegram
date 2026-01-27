@@ -1,86 +1,9 @@
 ///|
-pub struct InputLinkPreviewOptions {
-  is_disabled : Bool?
-  url : String?
-  prefer_small_media : Bool?
-  prefer_large_media : Bool?
-  show_above_text : Bool?
-} derive(Show, Eq)
-
-///|
-pub fn InputLinkPreviewOptions::new(
-  is_disabled? : Bool,
-  url? : String,
-  prefer_small_media? : Bool,
-  prefer_large_media? : Bool,
-  show_above_text? : Bool,
-) -> InputLinkPreviewOptions {
-  { is_disabled, url, prefer_small_media, prefer_large_media, show_above_text }
-}
-
-///|
-pub impl @json.ToJson for InputLinkPreviewOptions with to_json(self) {
-  let obj : Map[String, Json] = {}
-  if self.is_disabled is Some(v) {
-    obj["is_disabled"] = @json.to_json(v)
-  }
-  if self.url is Some(v) {
-    obj["url"] = @json.to_json(v)
-  }
-  if self.prefer_small_media is Some(v) {
-    obj["prefer_small_media"] = @json.to_json(v)
-  }
-  if self.prefer_large_media is Some(v) {
-    obj["prefer_large_media"] = @json.to_json(v)
-  }
-  if self.show_above_text is Some(v) {
-    obj["show_above_text"] = @json.to_json(v)
-  }
-  @json.to_json(obj)
-}
-
-///|
-pub impl @json.FromJson for InputLinkPreviewOptions with from_json(json, path) {
-  guard json is Object(obj) else {
-    raise @json.JsonDecodeError(
-      path~,
-      "Expected object for InputLinkPreviewOptions",
-    )
-  }
-  let is_disabled : Bool? = if obj.get("is_disabled") is Some(v) {
-    Some(@json.from_json(v, path~))
-  } else {
-    None
-  }
-  let url : String? = if obj.get("url") is Some(v) {
-    Some(@json.from_json(v, path~))
-  } else {
-    None
-  }
-  let prefer_small_media : Bool? = if obj.get("prefer_small_media") is Some(v) {
-    Some(@json.from_json(v, path~))
-  } else {
-    None
-  }
-  let prefer_large_media : Bool? = if obj.get("prefer_large_media") is Some(v) {
-    Some(@json.from_json(v, path~))
-  } else {
-    None
-  }
-  let show_above_text : Bool? = if obj.get("show_above_text") is Some(v) {
-    Some(@json.from_json(v, path~))
-  } else {
-    None
-  }
-  { is_disabled, url, prefer_small_media, prefer_large_media, show_above_text }
-}
-
-///|
 pub struct InputTextMessageContent {
   message_text : String
   parse_mode : String?
   entities : Array[MessageEntity]?
-  link_preview_options : InputLinkPreviewOptions?
+  link_preview_options : LinkPreviewOptions?
 } derive(Show, Eq)
 
 ///|
@@ -88,7 +11,7 @@ pub fn InputTextMessageContent::new(
   message_text~ : String,
   parse_mode? : String,
   entities? : Array[MessageEntity],
-  link_preview_options? : InputLinkPreviewOptions,
+  link_preview_options? : LinkPreviewOptions,
 ) -> InputTextMessageContent {
   { message_text, parse_mode, entities, link_preview_options }
 }
@@ -129,7 +52,7 @@ pub impl @json.FromJson for InputTextMessageContent with from_json(json, path) {
   } else {
     None
   }
-  let link_preview_options : InputLinkPreviewOptions? = if obj.get(
+  let link_preview_options : LinkPreviewOptions? = if obj.get(
       "link_preview_options",
     )
     is Some(v) {

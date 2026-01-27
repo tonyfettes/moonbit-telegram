@@ -1,37 +1,4 @@
 ///|
-/// Placeholder for InputTextMessageContent - will be replaced when batch 7B is merged
-pub struct InputTextMessageContent {
-  message_text : String
-} derive(Show, Eq)
-
-///|
-pub fn InputTextMessageContent::new(
-  message_text~ : String,
-) -> InputTextMessageContent {
-  { message_text, }
-}
-
-///|
-pub impl @json.ToJson for InputTextMessageContent with to_json(self) {
-  let obj : Map[String, Json] = {
-    "message_text": @json.to_json(self.message_text),
-  }
-  @json.to_json(obj)
-}
-
-///|
-pub impl @json.FromJson for InputTextMessageContent with from_json(json, path) {
-  guard json is Object(obj) else {
-    raise @json.JsonDecodeError(
-      path~,
-      "Expected object for InputTextMessageContent",
-    )
-  }
-  let message_text : String = @json.from_json(obj["message_text"], path~)
-  { message_text, }
-}
-
-///|
 pub struct InlineQueryResultPhoto {
   type_ : String
   id : String
