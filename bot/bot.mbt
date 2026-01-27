@@ -1074,3 +1074,201 @@ pub async fn Bot::send_contact(
   }
   parse_api_response(data)
 }
+
+///|
+/// Use this method to send a native poll.
+/// On success, the sent Message is returned.
+pub async fn Bot::send_poll(
+  self : Bot,
+  chat_id~ : Int64,
+  question~ : String,
+  options~ : Array[InputPollOption],
+  business_connection_id? : String,
+  message_thread_id? : Int,
+  question_parse_mode? : String,
+  question_entities? : Array[MessageEntity],
+  is_anonymous? : Bool,
+  type_? : String,
+  allows_multiple_answers? : Bool,
+  correct_option_id? : Int,
+  explanation? : String,
+  explanation_parse_mode? : String,
+  explanation_entities? : Array[MessageEntity],
+  open_period? : Int,
+  close_date? : Int,
+  is_closed? : Bool,
+  disable_notification? : Bool,
+  protect_content? : Bool,
+  allow_paid_broadcast? : Bool,
+  message_effect_id? : String,
+  reply_parameters? : ReplyParameters,
+  reply_markup? : InlineKeyboardMarkup,
+) -> Message raise TelegramError {
+  let url = self.api_url("sendPoll")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "question": @json.to_json(question),
+    "options": @json.ToJson::to_json(options),
+  }
+  if business_connection_id is Some(v) {
+    body["business_connection_id"] = @json.to_json(v)
+  }
+  if message_thread_id is Some(v) {
+    body["message_thread_id"] = @json.to_json(v)
+  }
+  if question_parse_mode is Some(v) {
+    body["question_parse_mode"] = @json.to_json(v)
+  }
+  if question_entities is Some(v) {
+    body["question_entities"] = @json.ToJson::to_json(v)
+  }
+  if is_anonymous is Some(v) {
+    body["is_anonymous"] = @json.to_json(v)
+  }
+  if type_ is Some(v) {
+    body["type"] = @json.to_json(v)
+  }
+  if allows_multiple_answers is Some(v) {
+    body["allows_multiple_answers"] = @json.to_json(v)
+  }
+  if correct_option_id is Some(v) {
+    body["correct_option_id"] = @json.to_json(v)
+  }
+  if explanation is Some(v) {
+    body["explanation"] = @json.to_json(v)
+  }
+  if explanation_parse_mode is Some(v) {
+    body["explanation_parse_mode"] = @json.to_json(v)
+  }
+  if explanation_entities is Some(v) {
+    body["explanation_entities"] = @json.ToJson::to_json(v)
+  }
+  if open_period is Some(v) {
+    body["open_period"] = @json.to_json(v)
+  }
+  if close_date is Some(v) {
+    body["close_date"] = @json.to_json(v)
+  }
+  if is_closed is Some(v) {
+    body["is_closed"] = @json.to_json(v)
+  }
+  if disable_notification is Some(v) {
+    body["disable_notification"] = @json.to_json(v)
+  }
+  if protect_content is Some(v) {
+    body["protect_content"] = @json.to_json(v)
+  }
+  if allow_paid_broadcast is Some(v) {
+    body["allow_paid_broadcast"] = @json.to_json(v)
+  }
+  if message_effect_id is Some(v) {
+    body["message_effect_id"] = @json.to_json(v)
+  }
+  if reply_parameters is Some(v) {
+    body["reply_parameters"] = @json.to_json(v)
+  }
+  if reply_markup is Some(v) {
+    body["reply_markup"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to send an animated emoji that will display a random value.
+/// On success, the sent Message is returned.
+pub async fn Bot::send_dice(
+  self : Bot,
+  chat_id~ : Int64,
+  business_connection_id? : String,
+  message_thread_id? : Int,
+  emoji? : String,
+  disable_notification? : Bool,
+  protect_content? : Bool,
+  allow_paid_broadcast? : Bool,
+  message_effect_id? : String,
+  reply_parameters? : ReplyParameters,
+  reply_markup? : InlineKeyboardMarkup,
+) -> Message raise TelegramError {
+  let url = self.api_url("sendDice")
+  let body : Map[String, Json] = { "chat_id": @json.to_json(chat_id) }
+  if business_connection_id is Some(v) {
+    body["business_connection_id"] = @json.to_json(v)
+  }
+  if message_thread_id is Some(v) {
+    body["message_thread_id"] = @json.to_json(v)
+  }
+  if emoji is Some(v) {
+    body["emoji"] = @json.to_json(v)
+  }
+  if disable_notification is Some(v) {
+    body["disable_notification"] = @json.to_json(v)
+  }
+  if protect_content is Some(v) {
+    body["protect_content"] = @json.to_json(v)
+  }
+  if allow_paid_broadcast is Some(v) {
+    body["allow_paid_broadcast"] = @json.to_json(v)
+  }
+  if message_effect_id is Some(v) {
+    body["message_effect_id"] = @json.to_json(v)
+  }
+  if reply_parameters is Some(v) {
+    body["reply_parameters"] = @json.to_json(v)
+  }
+  if reply_markup is Some(v) {
+    body["reply_markup"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method when you need to tell the user that something is happening on the bot's side.
+/// The status is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing status).
+/// On success, True is returned.
+pub async fn Bot::send_chat_action(
+  self : Bot,
+  chat_id~ : Int64,
+  action~ : String,
+  business_connection_id? : String,
+  message_thread_id? : Int,
+) -> Bool raise TelegramError {
+  let url = self.api_url("sendChatAction")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "action": @json.to_json(action),
+  }
+  if business_connection_id is Some(v) {
+    body["business_connection_id"] = @json.to_json(v)
+  }
+  if message_thread_id is Some(v) {
+    body["message_thread_id"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
