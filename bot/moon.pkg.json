@@ -7,5 +7,12 @@
       "path": "moonbitlang/core/encoding/utf8",
       "alias": "encoding/utf8"
     }
-  ]
+  ],
+  "test-import": [
+    "moonbitlang/async",
+    "moonbitlang/async/socket"
+  ],
+  "targets": {
+    "integration_test.mbt": ["native"]
+  }
 }
