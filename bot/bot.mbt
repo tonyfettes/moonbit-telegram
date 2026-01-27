@@ -2488,3 +2488,207 @@ pub async fn Bot::delete_sticker_set(
   }
   parse_api_response(data)
 }
+
+///|
+/// Use this method to send answers to an inline query.
+/// On success, True is returned.
+/// No more than 50 results per query are allowed.
+pub async fn Bot::answer_inline_query(
+  self : Bot,
+  inline_query_id~ : String,
+  results~ : Array[Json],
+  cache_time? : Int,
+  is_personal? : Bool,
+  next_offset? : String,
+  button? : InlineQueryResultsButton,
+) -> Bool raise TelegramError {
+  let url = self.api_url("answerInlineQuery")
+  let body : Map[String, Json] = {
+    "inline_query_id": @json.to_json(inline_query_id),
+    "results": @json.ToJson::to_json(results),
+  }
+  if cache_time is Some(v) {
+    body["cache_time"] = @json.to_json(v)
+  }
+  if is_personal is Some(v) {
+    body["is_personal"] = @json.to_json(v)
+  }
+  if next_offset is Some(v) {
+    body["next_offset"] = @json.to_json(v)
+  }
+  if button is Some(v) {
+    body["button"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to set the result of an interaction with a Web App and send a corresponding message on behalf of the user to the chat from which the query originated.
+/// On success, a SentWebAppMessage object is returned.
+pub async fn Bot::answer_web_app_query(
+  self : Bot,
+  web_app_query_id~ : String,
+  result~ : Json,
+) -> Json raise TelegramError {
+  let url = self.api_url("answerWebAppQuery")
+  let body : Map[String, Json] = {
+    "web_app_query_id": @json.to_json(web_app_query_id),
+    "result": result,
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to send a game.
+/// On success, the sent Message is returned.
+pub async fn Bot::send_game(
+  self : Bot,
+  chat_id~ : Int64,
+  game_short_name~ : String,
+  business_connection_id? : String,
+  message_thread_id? : Int,
+  disable_notification? : Bool,
+  protect_content? : Bool,
+  allow_paid_broadcast? : Bool,
+  message_effect_id? : String,
+  reply_parameters? : ReplyParameters,
+  reply_markup? : InlineKeyboardMarkup,
+) -> Message raise TelegramError {
+  let url = self.api_url("sendGame")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "game_short_name": @json.to_json(game_short_name),
+  }
+  if business_connection_id is Some(v) {
+    body["business_connection_id"] = @json.to_json(v)
+  }
+  if message_thread_id is Some(v) {
+    body["message_thread_id"] = @json.to_json(v)
+  }
+  if disable_notification is Some(v) {
+    body["disable_notification"] = @json.to_json(v)
+  }
+  if protect_content is Some(v) {
+    body["protect_content"] = @json.to_json(v)
+  }
+  if allow_paid_broadcast is Some(v) {
+    body["allow_paid_broadcast"] = @json.to_json(v)
+  }
+  if message_effect_id is Some(v) {
+    body["message_effect_id"] = @json.to_json(v)
+  }
+  if reply_parameters is Some(v) {
+    body["reply_parameters"] = @json.to_json(v)
+  }
+  if reply_markup is Some(v) {
+    body["reply_markup"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to set the score of the specified user in a game message.
+/// On success, if the message is not an inline message, the Message is returned, otherwise True is returned.
+/// Returns an error, if the new score is not greater than the user's current score in the chat and force is False.
+pub async fn Bot::set_game_score(
+  self : Bot,
+  user_id~ : Int64,
+  score~ : Int,
+  force? : Bool,
+  disable_edit_message? : Bool,
+  chat_id? : Int64,
+  message_id? : Int,
+  inline_message_id? : String,
+) -> Json raise TelegramError {
+  let url = self.api_url("setGameScore")
+  let body : Map[String, Json] = {
+    "user_id": @json.to_json(user_id),
+    "score": @json.to_json(score),
+  }
+  if force is Some(v) {
+    body["force"] = @json.to_json(v)
+  }
+  if disable_edit_message is Some(v) {
+    body["disable_edit_message"] = @json.to_json(v)
+  }
+  if chat_id is Some(v) {
+    body["chat_id"] = @json.to_json(v)
+  }
+  if message_id is Some(v) {
+    body["message_id"] = @json.to_json(v)
+  }
+  if inline_message_id is Some(v) {
+    body["inline_message_id"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to get data for high score tables.
+/// Will return the score of the specified user and several of their neighbors in a game.
+/// Returns an Array of GameHighScore objects.
+pub async fn Bot::get_game_high_scores(
+  self : Bot,
+  user_id~ : Int64,
+  chat_id? : Int64,
+  message_id? : Int,
+  inline_message_id? : String,
+) -> Array[Json] raise TelegramError {
+  let url = self.api_url("getGameHighScores")
+  let body : Map[String, Json] = { "user_id": @json.to_json(user_id) }
+  if chat_id is Some(v) {
+    body["chat_id"] = @json.to_json(v)
+  }
+  if message_id is Some(v) {
+    body["message_id"] = @json.to_json(v)
+  }
+  if inline_message_id is Some(v) {
+    body["inline_message_id"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
