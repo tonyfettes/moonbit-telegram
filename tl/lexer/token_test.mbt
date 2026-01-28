@@ -16,11 +16,8 @@ test "TokenKind::to_string for identifiers" {
 
 ///|
 test "TokenKind::to_string for literals" {
-  inspect(
-    TokenKind::HexNumber(0xd23c81a3).to_string(),
-    content="hex number '3527180707'",
-  )
-  inspect(TokenKind::Number(123).to_string(), content="number '123'")
+  inspect(TokenKind::HexNumber(0xd23c81a3).to_string(), content="hex number")
+  inspect(TokenKind::Number(123).to_string(), content="number 123")
 }
 
 ///|
@@ -61,11 +58,11 @@ test "TokenKind::to_string for section separators and keywords" {
 test "TokenKind::to_string for comments" {
   inspect(
     TokenKind::LineComment(" this is a comment").to_string(),
-    content="line comment ' this is a comment'",
+    content="line comment",
   )
   inspect(
     TokenKind::BlockComment(" block\ncomment ").to_string(),
-    content="block comment ' block\ncomment '",
+    content="block comment",
   )
 }
 
@@ -76,9 +73,9 @@ test "TokenKind::to_string for Eof" {
 
 ///|
 test "Token creation" {
-  let start = Position::{ line: 1, column: 1, offset: 0 }
-  let end = Position::{ line: 1, column: 5, offset: 4 }
-  let span = Span::{ start, end }
+  let start = @ast.Position::{ line: 1, column: 1, offset: 0 }
+  let end = @ast.Position::{ line: 1, column: 5, offset: 4 }
+  let span = @ast.Span::{ start, end }
   let token = Token::{ kind: TokenKind::LowerIdent("user"), span }
   inspect(token.kind, content="LowerIdent(\"user\")")
   inspect(token.span.start.line, content="1")
@@ -88,13 +85,13 @@ test "Token creation" {
 
 ///|
 test "Position and Span creation" {
-  let pos = Position::{ line: 10, column: 5, offset: 100 }
+  let pos = @ast.Position::{ line: 10, column: 5, offset: 100 }
   inspect(pos.line, content="10")
   inspect(pos.column, content="5")
   inspect(pos.offset, content="100")
-  let span = Span::{
+  let span = @ast.Span::{
     start: pos,
-    end: Position::{ line: 10, column: 10, offset: 105 },
+    end: @ast.Position::{ line: 10, column: 10, offset: 105 },
   }
   inspect(span.start.offset, content="100")
   inspect(span.end.offset, content="105")

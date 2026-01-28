@@ -1,0 +1,26 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "tonyfettes/telegram/tl/parser"
+
+import {
+  "tonyfettes/telegram/tl/ast",
+  "tonyfettes/telegram/tl/error",
+  "tonyfettes/telegram/tl/lexer",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub(all) struct Parser {
+  tokens : Array[@lexer.Token]
+  mut pos : Int
+  comments : Array[(@ast.Span, String)]
+}
+pub fn Parser::new(Array[@lexer.Token]) -> Self
+pub fn Parser::parse_schema(Self) -> @ast.Schema raise @error.TLParseError
+
+// Type aliases
+
+// Traits
+

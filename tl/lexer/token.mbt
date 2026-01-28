@@ -1,13 +1,13 @@
 ///|
-/// Token kinds for the TL lexer.
+/// Token kinds for TL lexer.
 pub(all) enum TokenKind {
   // Identifiers
-  LowerIdent(String) // user, auth, first_name
+  LowerIdent(String) // user, auth, vector
   UpperIdent(String) // User, Vector, Type
 
   // Literals
-  HexNumber(UInt) // hex number after # in constructor ID (e.g., d23c81a3)
-  Number(Int) // decimal number (e.g., 123)
+  HexNumber(UInt) // after # in constructor ID
+  Number(Int) // 123, -1
 
   // Punctuation
   Hash // #
@@ -30,24 +30,18 @@ pub(all) enum TokenKind {
   Plus // +
   Comma // ,
   Underscore // _
-
-  // Section separators
   TripleDash // ---
 
-  // Keywords (after ---)
-  Functions // functions
-  Types // types
-
-  // Finalization keywords
+  // Keywords
   Final // Final
   New // New
   Empty // Empty
+  Functions // functions (after ---)
+  Types // types (after ---)
 
   // Comments (preserved for doc generation)
   LineComment(String) // // comment
   BlockComment(String) // /* comment */
-
-  // End of file
   Eof
 } derive(Show, Eq)
 
@@ -55,17 +49,17 @@ pub(all) enum TokenKind {
 /// A token with its kind and source span.
 pub(all) struct Token {
   kind : TokenKind
-  span : Span
+  span : @ast.Span
 } derive(Show, Eq)
 
 ///|
-/// Returns a human-readable string representation of the token kind for error messages.
+/// Converts a TokenKind to a string for error messages.
 pub fn TokenKind::to_string(self : TokenKind) -> String {
   match self {
-    LowerIdent(s) => "identifier '\{s}'"
-    UpperIdent(s) => "identifier '\{s}'"
-    HexNumber(n) => "hex number '\{n}'"
-    Number(n) => "number '\{n}'"
+    LowerIdent(s) => "identifier '" + s + "'"
+    UpperIdent(s) => "identifier '" + s + "'"
+    HexNumber(_) => "hex number"
+    Number(n) => "number " + n.to_string()
     Hash => "'#'"
     Colon => "':'"
     Semicolon => "';'"
@@ -87,13 +81,13 @@ pub fn TokenKind::to_string(self : TokenKind) -> String {
     Comma => "','"
     Underscore => "'_'"
     TripleDash => "'---'"
-    Functions => "'functions'"
-    Types => "'types'"
     Final => "'Final'"
     New => "'New'"
     Empty => "'Empty'"
-    LineComment(s) => "line comment '\{s}'"
-    BlockComment(s) => "block comment '\{s}'"
+    Functions => "'functions'"
+    Types => "'types'"
+    LineComment(_) => "line comment"
+    BlockComment(_) => "block comment"
     Eof => "end of file"
   }
 }

@@ -1,0 +1,73 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "tonyfettes/telegram/tl/lexer"
+
+import {
+  "tonyfettes/telegram/tl/ast",
+  "tonyfettes/telegram/tl/error",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub(all) struct Lexer {
+  source : String
+  mut pos : Int
+  mut line : Int
+  mut column : Int
+}
+pub fn Lexer::new(source~ : String) -> Self
+pub fn Lexer::next_token(Self) -> Token raise @error.TLParseError
+pub fn Lexer::tokenize(Self) -> Array[Token] raise @error.TLParseError
+
+pub(all) struct Token {
+  kind : TokenKind
+  span : @ast.Span
+}
+pub impl Eq for Token
+pub impl Show for Token
+
+pub(all) enum TokenKind {
+  LowerIdent(String)
+  UpperIdent(String)
+  HexNumber(UInt)
+  Number(Int)
+  Hash
+  Colon
+  Semicolon
+  Equals
+  Question
+  Dot
+  LParen
+  RParen
+  LBracket
+  RBracket
+  LBrace
+  RBrace
+  LAngle
+  RAngle
+  Percent
+  Bang
+  Star
+  Plus
+  Comma
+  Underscore
+  TripleDash
+  Final
+  New
+  Empty
+  Functions
+  Types
+  LineComment(String)
+  BlockComment(String)
+  Eof
+}
+pub fn TokenKind::to_string(Self) -> String
+pub impl Eq for TokenKind
+pub impl Show for TokenKind
+
+// Type aliases
+
+// Traits
+

@@ -1,30 +1,70 @@
 ///|
+/// Re-export core types from subpackages for convenience.
+/// Users can import just `tl` and access all types.
+
+// Re-export AST types
+pub using @ast {
+  type Position,
+  type Span,
+  type NatExpr,
+  type TypeIdent,
+  type TypeExpr,
+  type Expr,
+  type Conditional,
+  type NamedArg,
+  type OptionalArg,
+  type MultiplicityArg,
+  type GroupedArg,
+  type Arg,
+  type ResultType,
+  type Combinator,
+  type FinalDecl,
+  type Declaration,
+  type Schema,
+}
+
+// Re-export error types
+
+///|
+pub using @error {type TLParseError}
+
+// Re-export lexer types
+
+///|
+pub using @lexer {type TokenKind, type Token, type Lexer}
+
+// Re-export parser types
+
+///|
+pub using @parser {type Parser}
+
+///|
 /// Parses a TL schema from source text.
 ///
 /// Example:
 /// ```
 /// let schema = @tl.parse(source="user id:long = User;")
 /// ```
-pub fn parse(source~ : String) -> Schema raise TLParseError {
-  let lexer = Lexer::new(source~)
+pub fn parse(source~ : String) -> @ast.Schema raise @error.TLParseError {
+  let lexer = @lexer.Lexer::new(source~)
   let tokens = lexer.tokenize()
-  let parser = Parser::new(tokens)
+  let parser = @parser.Parser::new(tokens)
   parser.parse_schema()
 }
 
 ///|
 /// Pretty-prints a Schema back to TL format.
-pub fn Schema::to_string(self : Schema) -> String {
+pub fn schema_to_string(schema : @ast.Schema) -> String {
   let sb = StringBuilder::new()
 
   // Print type declarations
-  for decl in self.types {
+  for decl in schema.types {
     match decl {
-      Declaration::Combinator(c) => {
+      @ast.Declaration::Combinator(c) => {
         sb.write_string(combinator_to_string(c))
         sb.write_char('\n')
       }
-      Declaration::Final(f) => {
+      @ast.Declaration::Final(f) => {
         sb.write_string(final_decl_to_string(f))
         sb.write_char('\n')
       }
@@ -32,9 +72,9 @@ pub fn Schema::to_string(self : Schema) -> String {
   }
 
   // Print functions section if any
-  if not(self.functions.is_empty()) {
+  if not(schema.functions.is_empty()) {
     sb.write_string("---functions---\n")
-    for f in self.functions {
+    for f in schema.functions {
       sb.write_string(combinator_to_string(f))
       sb.write_char('\n')
     }
@@ -43,7 +83,7 @@ pub fn Schema::to_string(self : Schema) -> String {
 }
 
 ///|
-fn combinator_to_string(c : Combinator) -> String {
+fn combinator_to_string(c : @ast.Combinator) -> String {
   let sb = StringBuilder::new()
 
   // Namespace.name
@@ -110,12 +150,12 @@ fn uint_to_hex(n : UInt) -> String {
 }
 
 ///|
-fn type_expr_to_string(expr : TypeExpr) -> String {
+fn type_expr_to_string(expr : @ast.TypeExpr) -> String {
   match expr {
-    TypeExpr::Ident(ident) => type_ident_to_string(ident)
-    TypeExpr::Bang(inner) => "!" + type_expr_to_string(inner)
-    TypeExpr::Percent(inner) => "%" + type_expr_to_string(inner)
-    TypeExpr::Apply(ident, params) => {
+    @ast.TypeExpr::Ident(ident) => type_ident_to_string(ident)
+    @ast.TypeExpr::Bang(inner) => "!" + type_expr_to_string(inner)
+    @ast.TypeExpr::Percent(inner) => "%" + type_expr_to_string(inner)
+    @ast.TypeExpr::Apply(ident, params) => {
       let sb = StringBuilder::new()
       sb.write_string(type_ident_to_string(ident))
       sb.write_char('<')
@@ -128,13 +168,13 @@ fn type_expr_to_string(expr : TypeExpr) -> String {
       sb.write_char('>')
       sb.to_string()
     }
-    TypeExpr::Var(name) => name
-    TypeExpr::Nat => "#"
+    @ast.TypeExpr::Var(name) => name
+    @ast.TypeExpr::Nat => "#"
   }
 }
 
 ///|
-fn type_ident_to_string(ident : TypeIdent) -> String {
+fn type_ident_to_string(ident : @ast.TypeIdent) -> String {
   if ident.ns is Some(ns) {
     ns + "." + ident.name
   } else {
@@ -143,18 +183,18 @@ fn type_ident_to_string(ident : TypeIdent) -> String {
 }
 
 ///|
-fn arg_to_string(arg : Arg) -> String {
+fn arg_to_string(arg : @ast.Arg) -> String {
   match arg {
-    Arg::Named(named) => named_arg_to_string(named)
-    Arg::Optional(opt) => optional_arg_to_string(opt)
-    Arg::Multiplicity(mult) => multiplicity_arg_to_string(mult)
-    Arg::Grouped(grouped) => grouped_arg_to_string(grouped)
-    Arg::Anonymous(type_) => type_expr_to_string(type_)
+    @ast.Arg::Named(named) => named_arg_to_string(named)
+    @ast.Arg::Optional(opt) => optional_arg_to_string(opt)
+    @ast.Arg::Multiplicity(mult) => multiplicity_arg_to_string(mult)
+    @ast.Arg::Grouped(grouped) => grouped_arg_to_string(grouped)
+    @ast.Arg::Anonymous(type_) => type_expr_to_string(type_)
   }
 }
 
 ///|
-fn named_arg_to_string(arg : NamedArg) -> String {
+fn named_arg_to_string(arg : @ast.NamedArg) -> String {
   let sb = StringBuilder::new()
   sb.write_string(arg.name)
   sb.write_char(':')
@@ -174,7 +214,7 @@ fn named_arg_to_string(arg : NamedArg) -> String {
 }
 
 ///|
-fn optional_arg_to_string(opt : OptionalArg) -> String {
+fn optional_arg_to_string(opt : @ast.OptionalArg) -> String {
   let sb = StringBuilder::new()
   sb.write_char('{')
   sb.write_string(opt.names.join(" "))
@@ -188,7 +228,7 @@ fn optional_arg_to_string(opt : OptionalArg) -> String {
 }
 
 ///|
-fn multiplicity_arg_to_string(mult : MultiplicityArg) -> String {
+fn multiplicity_arg_to_string(mult : @ast.MultiplicityArg) -> String {
   let sb = StringBuilder::new()
   if mult.name is Some(name) {
     sb.write_string(name)
@@ -207,7 +247,7 @@ fn multiplicity_arg_to_string(mult : MultiplicityArg) -> String {
 }
 
 ///|
-fn grouped_arg_to_string(grouped : GroupedArg) -> String {
+fn grouped_arg_to_string(grouped : @ast.GroupedArg) -> String {
   let sb = StringBuilder::new()
   sb.write_char('(')
   sb.write_string(grouped.names.join(" "))
@@ -221,17 +261,17 @@ fn grouped_arg_to_string(grouped : GroupedArg) -> String {
 }
 
 ///|
-fn nat_expr_to_string(expr : NatExpr) -> String {
+fn nat_expr_to_string(expr : @ast.NatExpr) -> String {
   match expr {
-    NatExpr::Const(n) => n.to_string()
-    NatExpr::Var(name) => name
-    NatExpr::Add(left, right) =>
+    @ast.NatExpr::Const(n) => n.to_string()
+    @ast.NatExpr::Var(name) => name
+    @ast.NatExpr::Add(left, right) =>
       nat_expr_to_string(left) + "+" + nat_expr_to_string(right)
   }
 }
 
 ///|
-fn result_type_to_string(result : ResultType) -> String {
+fn result_type_to_string(result : @ast.ResultType) -> String {
   let sb = StringBuilder::new()
   sb.write_string(type_ident_to_string(result.type_ident))
   for param in result.params {
@@ -242,18 +282,18 @@ fn result_type_to_string(result : ResultType) -> String {
 }
 
 ///|
-fn expr_to_string(expr : Expr) -> String {
+fn expr_to_string(expr : @ast.Expr) -> String {
   match expr {
-    Expr::Type(t) => type_expr_to_string(t)
-    Expr::Nat(n) => nat_expr_to_string(n)
+    @ast.Expr::Type(t) => type_expr_to_string(t)
+    @ast.Expr::Nat(n) => nat_expr_to_string(n)
   }
 }
 
 ///|
-fn final_decl_to_string(decl : FinalDecl) -> String {
+fn final_decl_to_string(decl : @ast.FinalDecl) -> String {
   match decl {
-    FinalDecl::New(ident) => "New " + type_ident_to_string(ident) + ";"
-    FinalDecl::Final(ident) => "Final " + type_ident_to_string(ident) + ";"
-    FinalDecl::Empty(ident) => "Empty " + type_ident_to_string(ident) + ";"
+    @ast.FinalDecl::New(ident) => "New " + type_ident_to_string(ident) + ";"
+    @ast.FinalDecl::Final(ident) => "Final " + type_ident_to_string(ident) + ";"
+    @ast.FinalDecl::Empty(ident) => "Empty " + type_ident_to_string(ident) + ";"
   }
 }

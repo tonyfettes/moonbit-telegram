@@ -1,0 +1,7 @@
+{
+  "import": [
+    "tonyfettes/telegram/tl/ast",
+    "tonyfettes/telegram/tl/error",
+    "moonbitlang/core/strconv"
+  ]
+}

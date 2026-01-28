@@ -1,0 +1,158 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "tonyfettes/telegram/tl/ast"
+
+// Values
+
+// Errors
+
+// Types and methods
+pub(all) enum Arg {
+  Named(NamedArg)
+  Optional(OptionalArg)
+  Multiplicity(MultiplicityArg)
+  Grouped(GroupedArg)
+  Anonymous(TypeExpr)
+}
+pub impl Eq for Arg
+pub impl Show for Arg
+
+pub(all) struct Combinator {
+  ns : String?
+  name : String
+  id : UInt?
+  opt_args : Array[OptionalArg]
+  args : Array[Arg]
+  result : ResultType
+  span : Span
+}
+pub impl Eq for Combinator
+pub impl Show for Combinator
+
+pub(all) struct Conditional {
+  var_name : String
+  bit_index : Int?
+}
+pub impl Eq for Conditional
+pub impl Show for Conditional
+
+pub(all) enum Declaration {
+  Combinator(Combinator)
+  Final(FinalDecl)
+}
+pub impl Eq for Declaration
+pub impl Show for Declaration
+
+pub(all) enum Expr {
+  Type(TypeExpr)
+  Nat(NatExpr)
+}
+pub impl Eq for Expr
+pub impl Show for Expr
+
+pub(all) enum FinalDecl {
+  New(TypeIdent)
+  Final(TypeIdent)
+  Empty(TypeIdent)
+}
+pub impl Eq for FinalDecl
+pub impl Show for FinalDecl
+
+pub(all) struct GroupedArg {
+  names : Array[String]
+  bang : Bool
+  type_ : TypeExpr
+}
+pub impl Eq for GroupedArg
+pub impl Show for GroupedArg
+
+pub(all) struct MultiplicityArg {
+  name : String?
+  count : NatExpr
+  args : Array[Arg]
+}
+pub impl Eq for MultiplicityArg
+pub impl Show for MultiplicityArg
+
+pub(all) struct NamedArg {
+  name : String
+  conditional : Conditional?
+  bang : Bool
+  type_ : TypeExpr
+}
+pub impl Eq for NamedArg
+pub impl Show for NamedArg
+
+pub(all) enum NatExpr {
+  Const(Int)
+  Var(String)
+  Add(NatExpr, NatExpr)
+}
+pub impl Eq for NatExpr
+pub impl Show for NatExpr
+
+pub(all) struct OptionalArg {
+  names : Array[String]
+  bang : Bool
+  type_ : TypeExpr
+}
+pub impl Eq for OptionalArg
+pub impl Show for OptionalArg
+
+pub(all) struct Position {
+  line : Int
+  column : Int
+  offset : Int
+}
+pub fn Position::new(line~ : Int, column~ : Int, offset~ : Int) -> Self
+pub impl Eq for Position
+pub impl Show for Position
+
+pub(all) struct ResultType {
+  type_ident : TypeIdent
+  params : Array[Expr]
+}
+pub impl Eq for ResultType
+pub impl Show for ResultType
+
+pub(all) struct Schema {
+  types : Array[Declaration]
+  functions : Array[Combinator]
+  comments : Array[(Span, String)]
+}
+pub fn Schema::new() -> Self
+pub impl Eq for Schema
+pub impl Show for Schema
+
+pub(all) struct Span {
+  start : Position
+  end : Position
+}
+pub fn Span::new(start~ : Position, end~ : Position) -> Self
+pub impl Eq for Span
+pub impl Show for Span
+
+pub(all) enum TypeExpr {
+  Ident(TypeIdent)
+  Bang(TypeExpr)
+  Percent(TypeExpr)
+  Apply(TypeIdent, Array[TypeExpr])
+  Var(String)
+  Nat
+}
+pub impl Eq for TypeExpr
+pub impl Show for TypeExpr
+
+pub(all) struct TypeIdent {
+  ns : String?
+  name : String
+}
+pub fn TypeIdent::namespaced(String, String) -> Self
+pub fn TypeIdent::new(name~ : String, ns? : String) -> Self
+pub fn TypeIdent::simple(String) -> Self
+pub impl Eq for TypeIdent
+pub impl Show for TypeIdent
+
+// Type aliases
+
+// Traits
+

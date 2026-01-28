@@ -1,6 +1,6 @@
 ///|
 test "Parser simple combinator" {
-  let lexer = Lexer::new(source="user id:long = User;")
+  let lexer = @lexer.Lexer::new(source="user id:long = User;")
   let tokens = lexer.tokenize()
   let parser = Parser::new(tokens)
   let schema = parser.parse_schema()
@@ -15,7 +15,7 @@ test "Parser simple combinator" {
 
 ///|
 test "Parser combinator with hex id" {
-  let lexer = Lexer::new(source="user#d23c81a3 id:long = User;")
+  let lexer = @lexer.Lexer::new(source="user#d23c81a3 id:long = User;")
   let tokens = lexer.tokenize()
   let parser = Parser::new(tokens)
   let schema = parser.parse_schema()
@@ -26,7 +26,7 @@ test "Parser combinator with hex id" {
 
 ///|
 test "Parser optional args" {
-  let lexer = Lexer::new(source="vector {t:Type} # [t] = Vector t;")
+  let lexer = @lexer.Lexer::new(source="vector {t:Type} # [t] = Vector t;")
   let tokens = lexer.tokenize()
   let parser = Parser::new(tokens)
   let schema = parser.parse_schema()
@@ -39,7 +39,7 @@ test "Parser optional args" {
 
 ///|
 test "Parser conditional field" {
-  let lexer = Lexer::new(
+  let lexer = @lexer.Lexer::new(
     source="user flags:# first_name:flags.0?string = User;",
   )
   let tokens = lexer.tokenize()
@@ -65,7 +65,7 @@ test "Parser conditional field" {
 
 ///|
 test "Parser multiplicity" {
-  let lexer = Lexer::new(source="int128 4*[ int ] = Int128;")
+  let lexer = @lexer.Lexer::new(source="int128 4*[ int ] = Int128;")
   let tokens = lexer.tokenize()
   let parser = Parser::new(tokens)
   let schema = parser.parse_schema()
@@ -81,7 +81,7 @@ test "Parser multiplicity" {
 ///|
 test "Parser functions section" {
   let source = "user = User;\n---functions---\ngetUser = User;"
-  let lexer = Lexer::new(source~)
+  let lexer = @lexer.Lexer::new(source~)
   let tokens = lexer.tokenize()
   let parser = Parser::new(tokens)
   let schema = parser.parse_schema()
@@ -97,25 +97,25 @@ test "Parser functions section" {
 ///|
 test "Parser final declarations" {
   let source = "New UserStatus;\nFinal UserStatus;\nEmpty SomeType;"
-  let lexer = Lexer::new(source~)
+  let lexer = @lexer.Lexer::new(source~)
   let tokens = lexer.tokenize()
   let parser = Parser::new(tokens)
   let schema = parser.parse_schema()
   inspect(schema.types.length(), content="3")
-  guard schema.types[0] is Final(FinalDecl::New(_)) else {
+  guard schema.types[0] is Final(@ast.FinalDecl::New(_)) else {
     fail("expected New")
   }
-  guard schema.types[1] is Final(FinalDecl::Final(_)) else {
+  guard schema.types[1] is Final(@ast.FinalDecl::Final(_)) else {
     fail("expected Final")
   }
-  guard schema.types[2] is Final(FinalDecl::Empty(_)) else {
+  guard schema.types[2] is Final(@ast.FinalDecl::Empty(_)) else {
     fail("expected Empty")
   }
 }
 
 ///|
 test "Parser namespaced combinator" {
-  let lexer = Lexer::new(
+  let lexer = @lexer.Lexer::new(
     source="auth.sentCode phone_code_hash:string = auth.SentCode;",
   )
   let tokens = lexer.tokenize()
@@ -131,7 +131,7 @@ test "Parser namespaced combinator" {
 
 ///|
 test "Parser grouped args" {
-  let lexer = Lexer::new(source="point (x y : Int) = Point;")
+  let lexer = @lexer.Lexer::new(source="point (x y : Int) = Point;")
   let tokens = lexer.tokenize()
   let parser = Parser::new(tokens)
   let schema = parser.parse_schema()
@@ -145,7 +145,7 @@ test "Parser grouped args" {
 
 ///|
 test "Parser type application" {
-  let lexer = Lexer::new(source="result {t:Type} value:t = Result<t>;")
+  let lexer = @lexer.Lexer::new(source="result {t:Type} value:t = Result<t>;")
   let tokens = lexer.tokenize()
   let parser = Parser::new(tokens)
   let schema = parser.parse_schema()
@@ -158,7 +158,7 @@ test "Parser type application" {
 
 ///|
 test "Parser anonymous multiplicity" {
-  let lexer = Lexer::new(source="vector {t:Type} # [ t ] = Vector t;")
+  let lexer = @lexer.Lexer::new(source="vector {t:Type} # [ t ] = Vector t;")
   let tokens = lexer.tokenize()
   let parser = Parser::new(tokens)
   let schema = parser.parse_schema()
@@ -171,7 +171,7 @@ test "Parser anonymous multiplicity" {
 
 ///|
 test "Parser bang in named arg" {
-  let lexer = Lexer::new(source="rpc {X:Type} query:!X = X;")
+  let lexer = @lexer.Lexer::new(source="rpc {X:Type} query:!X = X;")
   let tokens = lexer.tokenize()
   let parser = Parser::new(tokens)
   let schema = parser.parse_schema()
@@ -184,7 +184,7 @@ test "Parser bang in named arg" {
 
 ///|
 test "Parser percent type" {
-  let lexer = Lexer::new(source="foo value:%Type = Foo;")
+  let lexer = @lexer.Lexer::new(source="foo value:%Type = Foo;")
   let tokens = lexer.tokenize()
   let parser = Parser::new(tokens)
   let schema = parser.parse_schema()
@@ -196,7 +196,7 @@ test "Parser percent type" {
 ///|
 test "Parser comments preserved" {
   let source = "// This is a comment\nuser = User;"
-  let lexer = Lexer::new(source~)
+  let lexer = @lexer.Lexer::new(source~)
   let tokens = lexer.tokenize()
   let parser = Parser::new(tokens)
   let schema = parser.parse_schema()
@@ -206,7 +206,7 @@ test "Parser comments preserved" {
 
 ///|
 test "Parser underscore combinator name" {
-  let lexer = Lexer::new(source="_ = Null;")
+  let lexer = @lexer.Lexer::new(source="_ = Null;")
   let tokens = lexer.tokenize()
   let parser = Parser::new(tokens)
   let schema = parser.parse_schema()
@@ -217,7 +217,9 @@ test "Parser underscore combinator name" {
 
 ///|
 test "Parser result with space-separated params" {
-  let lexer = Lexer::new(source="pair {X:Type} {Y:Type} a:X b:Y = Pair X Y;")
+  let lexer = @lexer.Lexer::new(
+    source="pair {X:Type} {Y:Type} a:X b:Y = Pair X Y;",
+  )
   let tokens = lexer.tokenize()
   let parser = Parser::new(tokens)
   let schema = parser.parse_schema()
@@ -227,7 +229,9 @@ test "Parser result with space-separated params" {
 
 ///|
 test "Parser multiple optional args" {
-  let lexer = Lexer::new(source="tuple {t:Type} {n:#} items:t = Tuple t n;")
+  let lexer = @lexer.Lexer::new(
+    source="tuple {t:Type} {n:#} items:t = Tuple t n;",
+  )
   let tokens = lexer.tokenize()
   let parser = Parser::new(tokens)
   let schema = parser.parse_schema()
@@ -241,7 +245,7 @@ test "Parser multiple optional args" {
 ///|
 test "Parser triple dash types section" {
   let source = "---types---\nuser = User;\n---functions---\ngetUser = User;"
-  let lexer = Lexer::new(source~)
+  let lexer = @lexer.Lexer::new(source~)
   let tokens = lexer.tokenize()
   let parser = Parser::new(tokens)
   let schema = parser.parse_schema()

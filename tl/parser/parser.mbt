@@ -1,26 +1,26 @@
 ///|
 /// The parser state for parsing TL token streams.
-struct Parser {
-  tokens : Array[Token]
+pub(all) struct Parser {
+  tokens : Array[@lexer.Token]
   mut pos : Int
-  comments : Array[(Span, String)]
+  comments : Array[(@ast.Span, String)]
 }
 
 ///|
 /// Creates a new parser for the given token array.
-pub fn Parser::new(tokens : Array[Token]) -> Parser {
+pub fn Parser::new(tokens : Array[@lexer.Token]) -> Parser {
   { tokens, pos: 0, comments: [] }
 }
 
 ///|
 /// Returns the current token without advancing.
-fn Parser::current(self : Parser) -> Token {
+fn Parser::current(self : Parser) -> @lexer.Token {
   self.tokens[self.pos]
 }
 
 ///|
 /// Returns the kind of the current token.
-fn Parser::peek(self : Parser) -> TokenKind {
+fn Parser::peek(self : Parser) -> @lexer.TokenKind {
   self.current().kind
 }
 
@@ -32,7 +32,7 @@ fn Parser::is_at_end(self : Parser) -> Bool {
 
 ///|
 /// Advances to the next token and returns the current token.
-fn Parser::advance(self : Parser) -> Token {
+fn Parser::advance(self : Parser) -> @lexer.Token {
   let t = self.current()
   if self.pos < self.tokens.length() - 1 {
     self.pos += 1
@@ -44,11 +44,11 @@ fn Parser::advance(self : Parser) -> Token {
 /// Expects the current token to match the expected kind, advances and returns it.
 fn Parser::expect(
   self : Parser,
-  expected : TokenKind,
-) -> Token raise TLParseError {
+  expected : @lexer.TokenKind,
+) -> @lexer.Token raise @error.TLParseError {
   let token = self.current()
   guard token.kind == expected else {
-    raise TLParseError::UnexpectedToken(
+    raise @error.TLParseError::UnexpectedToken(
       pos=token.span.start,
       expected=expected.to_string(),
       found=token.kind.to_string(),
@@ -73,9 +73,11 @@ fn Parser::skip_comments(self : Parser) -> Unit {
 
 ///|
 /// Entry point - parses a complete TL schema.
-pub fn Parser::parse_schema(self : Parser) -> Schema raise TLParseError {
-  let types : Array[Declaration] = []
-  let functions : Array[Combinator] = []
+pub fn Parser::parse_schema(
+  self : Parser,
+) -> @ast.Schema raise @error.TLParseError {
+  let types : Array[@ast.Declaration] = []
+  let functions : Array[@ast.Combinator] = []
   let mut in_functions = false
   while not(self.is_at_end()) {
     self.skip_comments()
@@ -103,14 +105,14 @@ pub fn Parser::parse_schema(self : Parser) -> Schema raise TLParseError {
       }
       Final | New | Empty => {
         let decl = self.parse_final_decl()
-        types.push(Declaration::Final(decl))
+        types.push(@ast.Declaration::Final(decl))
       }
       _ => {
         let combinator = self.parse_combinator()
         if in_functions {
           functions.push(combinator)
         } else {
-          types.push(Declaration::Combinator(combinator))
+          types.push(@ast.Declaration::Combinator(combinator))
         }
       }
     }
@@ -120,7 +122,9 @@ pub fn Parser::parse_schema(self : Parser) -> Schema raise TLParseError {
 
 ///|
 /// Parses a combinator: full-combinator-id { opt-args } { args } = result-type ;
-fn Parser::parse_combinator(self : Parser) -> Combinator raise TLParseError {
+fn Parser::parse_combinator(
+  self : Parser,
+) -> @ast.Combinator raise @error.TLParseError {
   let start = self.current().span.start
   // Parse combinator name: lc-ident-ns or _
   let (ns, name) = self.parse_combinator_name()
@@ -157,7 +161,7 @@ fn Parser::parse_combinator(self : Parser) -> Combinator raise TLParseError {
     opt_args,
     args,
     result,
-    span: Span::new(start~, end=end_token.span.end),
+    span: @ast.Span::new(start~, end=end_token.span.end),
   }
 }
 
@@ -165,7 +169,7 @@ fn Parser::parse_combinator(self : Parser) -> Combinator raise TLParseError {
 /// Parses a combinator name: lc-ident-ns (namespace.name) or _ or just lc-ident.
 fn Parser::parse_combinator_name(
   self : Parser,
-) -> (String?, String) raise TLParseError {
+) -> (String?, String) raise @error.TLParseError {
   match self.peek() {
     Underscore => {
       let _ = self.advance()
@@ -186,7 +190,7 @@ fn Parser::parse_combinator_name(
           }
           _ => {
             let token = self.current()
-            raise TLParseError::UnexpectedToken(
+            raise @error.TLParseError::UnexpectedToken(
               pos=token.span.start,
               expected="lower identifier after '.'",
               found=token.kind.to_string(),
@@ -199,7 +203,7 @@ fn Parser::parse_combinator_name(
     }
     _ => {
       let token = self.current()
-      raise TLParseError::UnexpectedToken(
+      raise @error.TLParseError::UnexpectedToken(
         pos=token.span.start,
         expected="combinator name (lower identifier or '_')",
         found=token.kind.to_string(),
@@ -212,8 +216,8 @@ fn Parser::parse_combinator_name(
 /// Parses optional args: { var-ident { var-ident } : [!] type-expr }
 fn Parser::parse_opt_args(
   self : Parser,
-) -> Array[OptionalArg] raise TLParseError {
-  let result : Array[OptionalArg] = []
+) -> Array[@ast.OptionalArg] raise @error.TLParseError {
+  let result : Array[@ast.OptionalArg] = []
   while self.peek() is LBrace {
     let _ = self.advance() // {
     let names : Array[String] = []
@@ -243,8 +247,10 @@ fn Parser::parse_opt_args(
 
 ///|
 /// Parses args until = is reached.
-fn Parser::parse_args(self : Parser) -> Array[Arg] raise TLParseError {
-  let result : Array[Arg] = []
+fn Parser::parse_args(
+  self : Parser,
+) -> Array[@ast.Arg] raise @error.TLParseError {
+  let result : Array[@ast.Arg] = []
   while not(self.peek() is Equals) && not(self.is_at_end()) {
     self.skip_comments()
     if self.peek() is Equals {
@@ -257,7 +263,7 @@ fn Parser::parse_args(self : Parser) -> Array[Arg] raise TLParseError {
 
 ///|
 /// Parses a single argument.
-fn Parser::parse_arg(self : Parser) -> Arg raise TLParseError {
+fn Parser::parse_arg(self : Parser) -> @ast.Arg raise @error.TLParseError {
   match self.peek() {
     LParen => self.parse_grouped_arg()
     LBracket => {
@@ -265,9 +271,9 @@ fn Parser::parse_arg(self : Parser) -> Arg raise TLParseError {
       let _ = self.advance() // [
       let inner_args = self.parse_bracket_args()
       let _ = self.expect(RBracket)
-      Arg::Multiplicity({
+      @ast.Arg::Multiplicity({
         name: None,
-        count: NatExpr::Const(1),
+        count: @ast.NatExpr::Const(1),
         args: inner_args,
       })
     }
@@ -278,22 +284,22 @@ fn Parser::parse_arg(self : Parser) -> Arg raise TLParseError {
       } else {
         // Anonymous type
         let type_ = self.parse_type_expr()
-        Arg::Anonymous(type_)
+        @ast.Arg::Anonymous(type_)
       }
     Bang => {
       let _ = self.advance()
       let type_ = self.parse_type_expr()
-      Arg::Anonymous(TypeExpr::Bang(type_))
+      @ast.Arg::Anonymous(@ast.TypeExpr::Bang(type_))
     }
     Percent => {
       let _ = self.advance()
       let type_ = self.parse_type_expr()
-      Arg::Anonymous(TypeExpr::Percent(type_))
+      @ast.Arg::Anonymous(@ast.TypeExpr::Percent(type_))
     }
     Hash => {
       // Bare # as anonymous type
       let _ = self.advance()
-      Arg::Anonymous(TypeExpr::Nat)
+      @ast.Arg::Anonymous(@ast.TypeExpr::Nat)
     }
     Number(n) => {
       // Multiplicity: 4*[...]
@@ -302,15 +308,15 @@ fn Parser::parse_arg(self : Parser) -> Arg raise TLParseError {
       let _ = self.expect(LBracket)
       let inner_args = self.parse_bracket_args()
       let _ = self.expect(RBracket)
-      Arg::Multiplicity({
+      @ast.Arg::Multiplicity({
         name: None,
-        count: NatExpr::Const(n),
+        count: @ast.NatExpr::Const(n),
         args: inner_args,
       })
     }
     _ => {
       let token = self.current()
-      raise TLParseError::UnexpectedToken(
+      raise @error.TLParseError::UnexpectedToken(
         pos=token.span.start,
         expected="argument",
         found=token.kind.to_string(),
@@ -335,7 +341,7 @@ fn Parser::lookahead_is_named_arg(self : Parser) -> Bool {
 
 ///|
 /// Parses a named argument: name:type or name:cond?type or name.nat:type.
-fn Parser::parse_named_arg(self : Parser) -> Arg raise TLParseError {
+fn Parser::parse_named_arg(self : Parser) -> @ast.Arg raise @error.TLParseError {
   let name = match self.peek() {
     LowerIdent(s) | UpperIdent(s) => {
       let _ = self.advance()
@@ -343,7 +349,7 @@ fn Parser::parse_named_arg(self : Parser) -> Arg raise TLParseError {
     }
     _ => {
       let token = self.current()
-      raise TLParseError::UnexpectedToken(
+      raise @error.TLParseError::UnexpectedToken(
         pos=token.span.start,
         expected="identifier for named arg",
         found=token.kind.to_string(),
@@ -351,7 +357,7 @@ fn Parser::parse_named_arg(self : Parser) -> Arg raise TLParseError {
     }
   }
   // Check for conditional: name.N? or just name?
-  let conditional : Conditional? = if self.peek() is Dot {
+  let conditional : @ast.Conditional? = if self.peek() is Dot {
     let _ = self.advance() // .
     // Parse bit index
     match self.peek() {
@@ -362,7 +368,7 @@ fn Parser::parse_named_arg(self : Parser) -> Arg raise TLParseError {
       }
       _ => {
         let token = self.current()
-        raise TLParseError::UnexpectedToken(
+        raise @error.TLParseError::UnexpectedToken(
           pos=token.span.start,
           expected="bit index (number) after '.'",
           found=token.kind.to_string(),
@@ -386,7 +392,7 @@ fn Parser::parse_named_arg(self : Parser) -> Arg raise TLParseError {
       }
       _ => {
         let token = self.current()
-        raise TLParseError::UnexpectedToken(
+        raise @error.TLParseError::UnexpectedToken(
           pos=token.span.start,
           expected="field name after conditional",
           found=token.kind.to_string(),
@@ -401,12 +407,12 @@ fn Parser::parse_named_arg(self : Parser) -> Arg raise TLParseError {
       false
     }
     let type_ = self.parse_type_expr()
-    Arg::Named({ name: actual_name, conditional: Some(cond), bang, type_ })
+    @ast.Arg::Named({ name: actual_name, conditional: Some(cond), bang, type_ })
   } else {
     // name is the field name, check for :
     let _ = self.expect(Colon)
     // Check if there's a conditional after the colon (flags.N?)
-    let cond2 : Conditional? = if self.peek() is LowerIdent(var_name) {
+    let cond2 : @ast.Conditional? = if self.peek() is LowerIdent(var_name) {
       let saved = self.pos
       let _ = self.advance()
       if self.peek() is Dot {
@@ -447,13 +453,15 @@ fn Parser::parse_named_arg(self : Parser) -> Arg raise TLParseError {
       false
     }
     let type_ = self.parse_type_expr()
-    Arg::Named({ name, conditional: cond2, bang, type_ })
+    @ast.Arg::Named({ name, conditional: cond2, bang, type_ })
   }
 }
 
 ///|
 /// Parses a grouped argument: (x y : Type).
-fn Parser::parse_grouped_arg(self : Parser) -> Arg raise TLParseError {
+fn Parser::parse_grouped_arg(
+  self : Parser,
+) -> @ast.Arg raise @error.TLParseError {
   let _ = self.advance() // (
   let names : Array[String] = []
   // Collect names until :
@@ -475,13 +483,15 @@ fn Parser::parse_grouped_arg(self : Parser) -> Arg raise TLParseError {
   }
   let type_ = self.parse_type_expr()
   let _ = self.expect(RParen)
-  Arg::Grouped({ names, bang, type_ })
+  @ast.Arg::Grouped({ names, bang, type_ })
 }
 
 ///|
 /// Parses args inside brackets for multiplicity.
-fn Parser::parse_bracket_args(self : Parser) -> Array[Arg] raise TLParseError {
-  let result : Array[Arg] = []
+fn Parser::parse_bracket_args(
+  self : Parser,
+) -> Array[@ast.Arg] raise @error.TLParseError {
+  let result : Array[@ast.Arg] = []
   while not(self.peek() is RBracket) && not(self.is_at_end()) {
     self.skip_comments()
     if self.peek() is RBracket {
@@ -494,19 +504,21 @@ fn Parser::parse_bracket_args(self : Parser) -> Array[Arg] raise TLParseError {
 
 ///|
 /// Parses a type expression.
-fn Parser::parse_type_expr(self : Parser) -> TypeExpr raise TLParseError {
+fn Parser::parse_type_expr(
+  self : Parser,
+) -> @ast.TypeExpr raise @error.TLParseError {
   match self.peek() {
     Bang => {
       let _ = self.advance()
-      TypeExpr::Bang(self.parse_type_expr())
+      @ast.TypeExpr::Bang(self.parse_type_expr())
     }
     Percent => {
       let _ = self.advance()
-      TypeExpr::Percent(self.parse_type_expr())
+      @ast.TypeExpr::Percent(self.parse_type_expr())
     }
     Hash => {
       let _ = self.advance()
-      TypeExpr::Nat
+      @ast.TypeExpr::Nat
     }
     LowerIdent(name) => {
       let _ = self.advance()
@@ -514,16 +526,16 @@ fn Parser::parse_type_expr(self : Parser) -> TypeExpr raise TLParseError {
       if self.peek() is Dot {
         let _ = self.advance()
         let type_name = self.parse_ident_name()
-        let ident = TypeIdent::new(name=type_name, ns=name)
+        let ident = @ast.TypeIdent::new(name=type_name, ns=name)
         self.parse_type_apply(ident)
       } else {
         // Could be variable
-        TypeExpr::Var(name)
+        @ast.TypeExpr::Var(name)
       }
     }
     UpperIdent(name) => {
       let _ = self.advance()
-      let ident = TypeIdent::simple(name)
+      let ident = @ast.TypeIdent::simple(name)
       self.parse_type_apply(ident)
     }
     LParen => {
@@ -534,7 +546,7 @@ fn Parser::parse_type_expr(self : Parser) -> TypeExpr raise TLParseError {
     }
     _ => {
       let token = self.current()
-      raise TLParseError::UnexpectedToken(
+      raise @error.TLParseError::UnexpectedToken(
         pos=token.span.start,
         expected="type expression",
         found=token.kind.to_string(),
@@ -545,7 +557,7 @@ fn Parser::parse_type_expr(self : Parser) -> TypeExpr raise TLParseError {
 
 ///|
 /// Parses an identifier name (lower or upper).
-fn Parser::parse_ident_name(self : Parser) -> String raise TLParseError {
+fn Parser::parse_ident_name(self : Parser) -> String raise @error.TLParseError {
   match self.peek() {
     LowerIdent(s) | UpperIdent(s) => {
       let _ = self.advance()
@@ -553,7 +565,7 @@ fn Parser::parse_ident_name(self : Parser) -> String raise TLParseError {
     }
     _ => {
       let token = self.current()
-      raise TLParseError::UnexpectedToken(
+      raise @error.TLParseError::UnexpectedToken(
         pos=token.span.start,
         expected="identifier",
         found=token.kind.to_string(),
@@ -566,29 +578,31 @@ fn Parser::parse_ident_name(self : Parser) -> String raise TLParseError {
 /// Parses type application if present: Type<...> or just Type.
 fn Parser::parse_type_apply(
   self : Parser,
-  ident : TypeIdent,
-) -> TypeExpr raise TLParseError {
+  ident : @ast.TypeIdent,
+) -> @ast.TypeExpr raise @error.TLParseError {
   if self.peek() is LAngle {
     let _ = self.advance() // <
-    let params : Array[TypeExpr] = []
+    let params : Array[@ast.TypeExpr] = []
     params.push(self.parse_type_expr())
     while self.peek() is Comma {
       let _ = self.advance()
       params.push(self.parse_type_expr())
     }
     let _ = self.expect(RAngle)
-    TypeExpr::Apply(ident, params)
+    @ast.TypeExpr::Apply(ident, params)
   } else {
-    TypeExpr::Ident(ident)
+    @ast.TypeExpr::Ident(ident)
   }
 }
 
 ///|
 /// Parses a result type: type-ident { params } or type-ident < params >.
-fn Parser::parse_result_type(self : Parser) -> ResultType raise TLParseError {
+fn Parser::parse_result_type(
+  self : Parser,
+) -> @ast.ResultType raise @error.TLParseError {
   let (ns, name) = self.parse_type_ident_name()
-  let type_ident = TypeIdent::new(name~, ns?)
-  let params : Array[Expr] = []
+  let type_ident = @ast.TypeIdent::new(name~, ns?)
+  let params : Array[@ast.Expr] = []
   if self.peek() is LAngle {
     let _ = self.advance()
     params.push(self.parse_expr())
@@ -611,7 +625,7 @@ fn Parser::parse_result_type(self : Parser) -> ResultType raise TLParseError {
 /// Parses a type identifier name with optional namespace: ns.Name or Name.
 fn Parser::parse_type_ident_name(
   self : Parser,
-) -> (String?, String) raise TLParseError {
+) -> (String?, String) raise @error.TLParseError {
   match self.peek() {
     LowerIdent(ns) => {
       let _ = self.advance()
@@ -630,7 +644,7 @@ fn Parser::parse_type_ident_name(
     }
     _ => {
       let token = self.current()
-      raise TLParseError::UnexpectedToken(
+      raise @error.TLParseError::UnexpectedToken(
         pos=token.span.start,
         expected="type identifier",
         found=token.kind.to_string(),
@@ -641,7 +655,7 @@ fn Parser::parse_type_ident_name(
 
 ///|
 /// Parses an expression (type or nat).
-fn Parser::parse_expr(self : Parser) -> Expr raise TLParseError {
+fn Parser::parse_expr(self : Parser) -> @ast.Expr raise @error.TLParseError {
   match self.peek() {
     Number(n) => {
       let _ = self.advance()
@@ -649,9 +663,9 @@ fn Parser::parse_expr(self : Parser) -> Expr raise TLParseError {
       if self.peek() is Plus {
         let _ = self.advance()
         let right = self.parse_nat_expr()
-        Expr::Nat(NatExpr::Add(NatExpr::Const(n), right))
+        @ast.Expr::Nat(@ast.NatExpr::Add(@ast.NatExpr::Const(n), right))
       } else {
-        Expr::Nat(NatExpr::Const(n))
+        @ast.Expr::Nat(@ast.NatExpr::Const(n))
       }
     }
     LowerIdent(name) => {
@@ -661,22 +675,22 @@ fn Parser::parse_expr(self : Parser) -> Expr raise TLParseError {
       if self.peek() is Plus {
         let _ = self.advance()
         let right = self.parse_nat_expr()
-        Expr::Nat(NatExpr::Add(NatExpr::Var(name), right))
+        @ast.Expr::Nat(@ast.NatExpr::Add(@ast.NatExpr::Var(name), right))
       } else if self.peek() is Dot {
         // Namespace, restore and parse as type
         self.pos = saved
-        Expr::Type(self.parse_type_expr())
+        @ast.Expr::Type(self.parse_type_expr())
       } else {
         // Ambiguous - could be nat var or type var
         // In result context, assume type var
-        Expr::Type(TypeExpr::Var(name))
+        @ast.Expr::Type(@ast.TypeExpr::Var(name))
       }
     }
     UpperIdent(_) | Bang | Percent | Hash | LParen =>
-      Expr::Type(self.parse_type_expr())
+      @ast.Expr::Type(self.parse_type_expr())
     _ => {
       let token = self.current()
-      raise TLParseError::UnexpectedToken(
+      raise @error.TLParseError::UnexpectedToken(
         pos=token.span.start,
         expected="expression",
         found=token.kind.to_string(),
@@ -687,16 +701,18 @@ fn Parser::parse_expr(self : Parser) -> Expr raise TLParseError {
 
 ///|
 /// Parses a nat expression: n or n+m.
-fn Parser::parse_nat_expr(self : Parser) -> NatExpr raise TLParseError {
+fn Parser::parse_nat_expr(
+  self : Parser,
+) -> @ast.NatExpr raise @error.TLParseError {
   match self.peek() {
     Number(n) => {
       let _ = self.advance()
       if self.peek() is Plus {
         let _ = self.advance()
         let right = self.parse_nat_expr()
-        NatExpr::Add(NatExpr::Const(n), right)
+        @ast.NatExpr::Add(@ast.NatExpr::Const(n), right)
       } else {
-        NatExpr::Const(n)
+        @ast.NatExpr::Const(n)
       }
     }
     LowerIdent(name) => {
@@ -704,14 +720,14 @@ fn Parser::parse_nat_expr(self : Parser) -> NatExpr raise TLParseError {
       if self.peek() is Plus {
         let _ = self.advance()
         let right = self.parse_nat_expr()
-        NatExpr::Add(NatExpr::Var(name), right)
+        @ast.NatExpr::Add(@ast.NatExpr::Var(name), right)
       } else {
-        NatExpr::Var(name)
+        @ast.NatExpr::Var(name)
       }
     }
     _ => {
       let token = self.current()
-      raise TLParseError::UnexpectedToken(
+      raise @error.TLParseError::UnexpectedToken(
         pos=token.span.start,
         expected="nat expression",
         found=token.kind.to_string(),
@@ -722,29 +738,31 @@ fn Parser::parse_nat_expr(self : Parser) -> NatExpr raise TLParseError {
 
 ///|
 /// Parses a final declaration: New/Final/Empty TypeIdent ;
-fn Parser::parse_final_decl(self : Parser) -> FinalDecl raise TLParseError {
+fn Parser::parse_final_decl(
+  self : Parser,
+) -> @ast.FinalDecl raise @error.TLParseError {
   match self.peek() {
     New => {
       let _ = self.advance()
       let ident = self.parse_type_ident()
       let _ = self.expect(Semicolon)
-      FinalDecl::New(ident)
+      @ast.FinalDecl::New(ident)
     }
     Final => {
       let _ = self.advance()
       let ident = self.parse_type_ident()
       let _ = self.expect(Semicolon)
-      FinalDecl::Final(ident)
+      @ast.FinalDecl::Final(ident)
     }
     Empty => {
       let _ = self.advance()
       let ident = self.parse_type_ident()
       let _ = self.expect(Semicolon)
-      FinalDecl::Empty(ident)
+      @ast.FinalDecl::Empty(ident)
     }
     _ => {
       let token = self.current()
-      raise TLParseError::UnexpectedToken(
+      raise @error.TLParseError::UnexpectedToken(
         pos=token.span.start,
         expected="final declaration (New, Final, or Empty)",
         found=token.kind.to_string(),
@@ -755,7 +773,9 @@ fn Parser::parse_final_decl(self : Parser) -> FinalDecl raise TLParseError {
 
 ///|
 /// Parses a type identifier: ns.Name or Name.
-fn Parser::parse_type_ident(self : Parser) -> TypeIdent raise TLParseError {
+fn Parser::parse_type_ident(
+  self : Parser,
+) -> @ast.TypeIdent raise @error.TLParseError {
   let (ns, name) = self.parse_type_ident_name()
-  TypeIdent::new(name~, ns?)
+  @ast.TypeIdent::new(name~, ns?)
 }

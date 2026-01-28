@@ -83,7 +83,7 @@ test "Integration: final declarations" {
     #|Empty SomeUnusedType;
   let schema = parse(source~)
   inspect(schema.types.length(), content="3")
-  guard schema.types[0] is Final(FinalDecl::New(_)) else {
+  guard schema.types[0] is Final(@ast.FinalDecl::New(_)) else {
     fail("expected New")
   }
 }
@@ -139,10 +139,10 @@ test "Integration: bang bare type in args" {
 }
 
 ///|
-test "Integration: parse and to_string roundtrip" {
+test "Integration: parse and schema_to_string roundtrip" {
   let source = "user id:long name:string = User;"
   let schema = parse(source~)
-  let output = schema.to_string()
+  let output = schema_to_string(schema)
   // Parse again to verify it's valid
   let schema2 = parse(source=output)
   inspect(schema2.types.length(), content="1")
@@ -151,70 +151,70 @@ test "Integration: parse and to_string roundtrip" {
 }
 
 ///|
-test "Integration: to_string with hex id" {
+test "Integration: schema_to_string with hex id" {
   let source = "user#d23c81a3 id:long = User;"
   let schema = parse(source~)
-  let output = schema.to_string()
+  let output = schema_to_string(schema)
   assert_true(output.contains("#d23c81a3"))
 }
 
 ///|
-test "Integration: to_string with optional args" {
+test "Integration: schema_to_string with optional args" {
   let source = "vector {t:Type} # [t] = Vector t;"
   let schema = parse(source~)
-  let output = schema.to_string()
+  let output = schema_to_string(schema)
   assert_true(output.contains("{t:Type}"))
 }
 
 ///|
-test "Integration: to_string with functions section" {
+test "Integration: schema_to_string with functions section" {
   let source =
     #|user = User;
     #|---functions---
     #|getUser id:long = User;
   let schema = parse(source~)
-  let output = schema.to_string()
+  let output = schema_to_string(schema)
   assert_true(output.contains("---functions---"))
   assert_true(output.contains("getUser"))
 }
 
 ///|
-test "Integration: to_string with final declarations" {
+test "Integration: schema_to_string with final declarations" {
   let source = "New UserStatus;"
   let schema = parse(source~)
-  let output = schema.to_string()
+  let output = schema_to_string(schema)
   assert_true(output.contains("New UserStatus;"))
 }
 
 ///|
-test "Integration: to_string with conditional" {
+test "Integration: schema_to_string with conditional" {
   let source = "user flags:# name:flags.0?string = User;"
   let schema = parse(source~)
-  let output = schema.to_string()
+  let output = schema_to_string(schema)
   assert_true(output.contains("flags.0?"))
 }
 
 ///|
-test "Integration: to_string with multiplicity" {
+test "Integration: schema_to_string with multiplicity" {
   let source = "int128 4*[int] = Int128;"
   let schema = parse(source~)
-  let output = schema.to_string()
+  let output = schema_to_string(schema)
   assert_true(output.contains("4*["))
 }
 
 ///|
-test "Integration: to_string with grouped args" {
+test "Integration: schema_to_string with grouped args" {
   let source = "point (x y:Int) = Point;"
   let schema = parse(source~)
-  let output = schema.to_string()
+  let output = schema_to_string(schema)
   assert_true(output.contains("(x y:Int)"))
 }
 
 ///|
-test "Integration: to_string with namespace" {
+test "Integration: schema_to_string with namespace" {
   let source = "auth.sentCode hash:string = auth.SentCode;"
   let schema = parse(source~)
-  let output = schema.to_string()
+  let output = schema_to_string(schema)
   assert_true(output.contains("auth.sentCode"))
   assert_true(output.contains("auth.SentCode"))
 }
