@@ -7,4 +7,10 @@ import {
 
 import "test" {
   "tonyfettes/telegram/tl/ast",
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
 }
+
+options(
+  targets: { "integration_test.mbt": [ "native" ] },
+)

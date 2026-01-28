@@ -144,6 +144,26 @@ fn Parser::parse_combinator(
   } else {
     None
   }
+  // Handle `?` as a marker for built-in types with no fixed constructor ID
+  // e.g., `int ? = Int;`
+  if self.peek() is Question {
+    let _ = self.advance()
+    // Expect =
+    let _ = self.expect(Equals)
+    // Parse result type
+    let result = self.parse_result_type()
+    // Expect ;
+    let end_token = self.expect(Semicolon)
+    return {
+      ns,
+      name,
+      id,
+      opt_args: [],
+      args: [],
+      result,
+      span: @ast.Span::new(start~, end=end_token.span.end),
+    }
+  }
   // Parse optional args: { ... } { ... }
   let opt_args = self.parse_opt_args()
   // Parse regular args
@@ -277,7 +297,7 @@ fn Parser::parse_arg(self : Parser) -> @ast.Arg raise @error.TLParseError {
         args: inner_args,
       })
     }
-    LowerIdent(_) | UpperIdent(_) =>
+    LowerIdent(_) | UpperIdent(_) | Types | Functions =>
       // Could be name:type, name:cond?type, or just type
       if self.lookahead_is_named_arg() {
         self.parse_named_arg()
@@ -346,6 +366,15 @@ fn Parser::parse_named_arg(self : Parser) -> @ast.Arg raise @error.TLParseError 
     LowerIdent(s) | UpperIdent(s) => {
       let _ = self.advance()
       s
+    }
+    // Handle keywords that can also be field names
+    Types => {
+      let _ = self.advance()
+      "types"
+    }
+    Functions => {
+      let _ = self.advance()
+      "functions"
     }
     _ => {
       let token = self.current()
@@ -527,6 +556,10 @@ fn Parser::parse_type_expr(
         let _ = self.advance()
         let type_name = self.parse_ident_name()
         let ident = @ast.TypeIdent::new(name=type_name, ns=name)
+        self.parse_type_apply(ident)
+      } else if self.peek() is LAngle {
+        // Type application with lowercase name (e.g., vector<IpPort>)
+        let ident = @ast.TypeIdent::simple(name)
         self.parse_type_apply(ident)
       } else {
         // Could be variable

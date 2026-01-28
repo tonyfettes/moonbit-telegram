@@ -218,3 +218,14 @@ test "Integration: schema_to_string with namespace" {
   assert_true(output.contains("auth.sentCode"))
   assert_true(output.contains("auth.SentCode"))
 }
+
+///|
+async test "Integration: parse Telegram MTProto schema" {
+  let source = @fs.read_file("tl/testdata/api.tl").text()
+  let schema = parse(source~)
+  println("Types: \{schema.types.length()}")
+  println("Functions: \{schema.functions.length()}")
+  // Expect substantial number of types and functions
+  assert_true(schema.types.length() > 1000)
+  assert_true(schema.functions.length() > 500)
+}
