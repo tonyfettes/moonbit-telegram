@@ -15,6 +15,7 @@ pub using @ast {
   type OptionalArg,
   type MultiplicityArg,
   type GroupedArg,
+  type AnonymousArg,
   type Arg,
   type ResultType,
   type Combinator,
@@ -178,7 +179,6 @@ fn uint_to_hex(n : UInt) -> String {
 fn type_expr_to_string(expr : @ast.TypeExpr) -> String {
   match expr {
     @ast.TypeExpr::Ident(ident) => type_ident_to_string(ident)
-    @ast.TypeExpr::Bang(inner) => "!" + type_expr_to_string(inner)
     @ast.TypeExpr::Percent(inner) => "%" + type_expr_to_string(inner)
     @ast.TypeExpr::Apply(ident, params) => {
       let sb = StringBuilder::new()
@@ -214,7 +214,10 @@ fn arg_to_string(arg : @ast.Arg) -> String {
     @ast.Arg::Optional(opt) => optional_arg_to_string(opt)
     @ast.Arg::Multiplicity(mult) => multiplicity_arg_to_string(mult)
     @ast.Arg::Grouped(grouped) => grouped_arg_to_string(grouped)
-    @ast.Arg::Anonymous(type_) => type_expr_to_string(type_)
+    @ast.Arg::Anonymous(anon) => {
+      let prefix = if anon.bang { "!" } else { "" }
+      prefix + type_expr_to_string(anon.type_)
+    }
   }
 }
 

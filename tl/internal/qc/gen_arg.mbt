@@ -107,6 +107,12 @@ pub fn gen_grouped_arg() -> @qc.Gen[@ast.GroupedArg] {
 }
 
 ///|
+/// Generates an AnonymousArg.
+pub fn gen_anonymous_arg() -> @qc.Gen[@ast.AnonymousArg] {
+  @qc.liftA2(fn(bang, type_) { { bang, type_ } }, gen_bool(), gen_type_expr())
+}
+
+///|
 /// Generates an Arg.
 pub fn gen_arg() -> @qc.Gen[@ast.Arg] {
   @qc.sized(fn(size) { gen_arg_sized(size) })
@@ -120,7 +126,7 @@ fn gen_arg_sized(size : Int) -> @qc.Gen[@ast.Arg] {
       (4, gen_named_arg().fmap(fn(x) { @ast.Arg::Named(x) })),
       (2, gen_optional_arg().fmap(fn(x) { @ast.Arg::Optional(x) })),
       (2, gen_grouped_arg().fmap(fn(x) { @ast.Arg::Grouped(x) })),
-      (2, gen_type_expr().fmap(fn(x) { @ast.Arg::Anonymous(x) })),
+      (2, gen_anonymous_arg().fmap(fn(x) { @ast.Arg::Anonymous(x) })),
     ])
   } else {
     @qc.frequency([
@@ -133,7 +139,7 @@ fn gen_arg_sized(size : Int) -> @qc.Gen[@ast.Arg] {
         }),
       ),
       (2, gen_grouped_arg().fmap(fn(x) { @ast.Arg::Grouped(x) })),
-      (2, gen_type_expr().fmap(fn(x) { @ast.Arg::Anonymous(x) })),
+      (2, gen_anonymous_arg().fmap(fn(x) { @ast.Arg::Anonymous(x) })),
     ])
   }
 }

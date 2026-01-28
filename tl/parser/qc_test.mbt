@@ -2,7 +2,6 @@
 /// Property: parse(schema_to_string(schema)) == schema (ignoring spans)
 ///
 /// Note: This test may fail due to known AST normalization issues:
-/// - Bang(TypeExpr) vs bang:Bool field ambiguity in NamedArg/GroupedArg
 /// - Variable references that aren't declared in opt_args
 /// - Conditional references to non-existent flags fields
 ///

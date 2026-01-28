@@ -38,8 +38,6 @@ pub fn TypeIdent::namespaced(ns : String, name : String) -> TypeIdent {
 pub(all) enum TypeExpr {
   // Named type reference (bare or boxed based on case)
   Ident(TypeIdent)
-  // ! prefix for bare serialization in args
-  Bang(TypeExpr)
   // % prefix for bare type reference
   Percent(TypeExpr)
   // Generic application: Vector<int>, Tuple<t, n>

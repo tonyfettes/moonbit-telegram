@@ -69,7 +69,6 @@ fn gen_type_expr_sized(size : Int) -> @qc.Gen[@ast.TypeExpr] {
       (5, gen_type_ident().fmap(fn(i) { @ast.TypeExpr::Ident(i) })),
       (2, gen_lower_ident().fmap(fn(s) { @ast.TypeExpr::Var(s) })),
       (1, @qc.pure(@ast.TypeExpr::Nat)),
-      (1, gen_type_expr_sized(smaller).fmap(fn(x) { @ast.TypeExpr::Bang(x) })),
       (
         1,
         gen_type_expr_sized(smaller).fmap(fn(x) { @ast.TypeExpr::Percent(x) }),

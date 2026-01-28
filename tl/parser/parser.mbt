@@ -304,22 +304,22 @@ fn Parser::parse_arg(self : Parser) -> @ast.Arg raise @error.TLParseError {
       } else {
         // Anonymous type
         let type_ = self.parse_type_expr()
-        @ast.Arg::Anonymous(type_)
+        @ast.Arg::Anonymous({ bang: false, type_ })
       }
     Bang => {
       let _ = self.advance()
       let type_ = self.parse_type_expr()
-      @ast.Arg::Anonymous(@ast.TypeExpr::Bang(type_))
+      @ast.Arg::Anonymous({ bang: true, type_ })
     }
     Percent => {
       let _ = self.advance()
       let type_ = self.parse_type_expr()
-      @ast.Arg::Anonymous(@ast.TypeExpr::Percent(type_))
+      @ast.Arg::Anonymous({ bang: false, type_: @ast.TypeExpr::Percent(type_) })
     }
     Hash => {
       // Bare # as anonymous type
       let _ = self.advance()
-      @ast.Arg::Anonymous(@ast.TypeExpr::Nat)
+      @ast.Arg::Anonymous({ bang: false, type_: @ast.TypeExpr::Nat })
     }
     Number(n) => {
       // Multiplicity: 4*[...]
@@ -537,10 +537,6 @@ fn Parser::parse_type_expr(
   self : Parser,
 ) -> @ast.TypeExpr raise @error.TLParseError {
   match self.peek() {
-    Bang => {
-      let _ = self.advance()
-      @ast.TypeExpr::Bang(self.parse_type_expr())
-    }
     Percent => {
       let _ = self.advance()
       @ast.TypeExpr::Percent(self.parse_type_expr())

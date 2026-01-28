@@ -8,6 +8,10 @@ import {
 // Values
 pub fn combinator_full_name(@ast.Combinator) -> String
 
+pub fn crc32(String) -> UInt
+
+pub fn normalize_combinator(@ast.Combinator) -> String
+
 pub fn type_ident_full_name(@ast.TypeIdent) -> String
 
 pub fn type_schema(@ast.Schema) -> SymbolTable raise TLTypeError
@@ -20,6 +24,10 @@ pub(all) suberror TLTypeError {
   UndefinedFlagsField(pos~ : @ast.Span, conditional~ : String, ctor~ : String)
   UnboundTypeVariable(pos~ : @ast.Span, variable~ : String)
   UnboundNatVariable(pos~ : @ast.Span, variable~ : String)
+  UnusedOptionalParameter(pos~ : @ast.Span, variable~ : String)
+  FinalTypeViolation(pos~ : @ast.Span, type_name~ : String)
+  NewTypeViolation(pos~ : @ast.Span, type_name~ : String)
+  EmptyTypeViolation(pos~ : @ast.Span, type_name~ : String)
 }
 pub impl Eq for TLTypeError
 pub impl Show for TLTypeError

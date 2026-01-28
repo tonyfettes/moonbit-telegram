@@ -139,6 +139,23 @@ test "Integration: bang bare type in args" {
 }
 
 ///|
+test "Integration: anonymous bang arg round-trip" {
+  let source = "rpc {X:Type} !X = X;"
+  let schema = parse(source~)
+  guard schema.types[0] is Combinator(c) else { fail("expected Combinator") }
+  guard c.args[0] is Anonymous(anon) else { fail("expected Anonymous arg") }
+  inspect(anon.bang, content="true")
+  // Test round-trip
+  let output = schema_to_string(schema)
+  let schema2 = parse(source=output)
+  guard schema2.types[0] is Combinator(c2) else { fail("expected Combinator") }
+  guard c2.args[0] is Anonymous(anon2) else { fail("expected Anonymous arg") }
+  inspect(anon2.bang, content="true")
+  // The type should also be preserved
+  assert_true(anon.type_ == anon2.type_)
+}
+
+///|
 test "Integration: parse and schema_to_string roundtrip" {
   let source = "user id:long name:string = User;"
   let schema = parse(source~)

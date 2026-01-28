@@ -6,12 +6,19 @@ package "tonyfettes/telegram/tl/ast"
 // Errors
 
 // Types and methods
+pub(all) struct AnonymousArg {
+  bang : Bool
+  type_ : TypeExpr
+}
+pub impl Eq for AnonymousArg
+pub impl Show for AnonymousArg
+
 pub(all) enum Arg {
   Named(NamedArg)
   Optional(OptionalArg)
   Multiplicity(MultiplicityArg)
   Grouped(GroupedArg)
-  Anonymous(TypeExpr)
+  Anonymous(AnonymousArg)
 }
 pub impl Eq for Arg
 pub impl Show for Arg
@@ -50,12 +57,19 @@ pub impl Eq for Expr
 pub impl Show for Expr
 
 pub(all) enum FinalDecl {
-  New(TypeIdent)
-  Final(TypeIdent)
-  Empty(TypeIdent)
+  New(FinalDeclData)
+  Final(FinalDeclData)
+  Empty(FinalDeclData)
 }
 pub impl Eq for FinalDecl
 pub impl Show for FinalDecl
+
+pub(all) struct FinalDeclData {
+  type_ident : TypeIdent
+  span : Span
+}
+pub impl Eq for FinalDeclData
+pub impl Show for FinalDeclData
 
 pub(all) struct GroupedArg {
   names : Array[String]
@@ -86,6 +100,8 @@ pub(all) enum NatExpr {
   Const(Int)
   Var(String)
   Add(NatExpr, NatExpr)
+  Zero
+  Succ(NatExpr)
 }
 pub impl Eq for NatExpr
 pub impl Show for NatExpr
@@ -133,7 +149,6 @@ pub impl Show for Span
 
 pub(all) enum TypeExpr {
   Ident(TypeIdent)
-  Bang(TypeExpr)
   Percent(TypeExpr)
   Apply(TypeIdent, Array[TypeExpr])
   Var(String)

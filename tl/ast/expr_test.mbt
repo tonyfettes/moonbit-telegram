@@ -44,10 +44,11 @@ test "TypeExpr Apply" {
 }
 
 ///|
-test "TypeExpr Bang" {
+test "AnonymousArg with bang" {
   let inner = TypeExpr::Ident(TypeIdent::simple("InputReplyTo"))
-  let expr = TypeExpr::Bang(inner)
-  guard expr is Bang(_) else { fail("expected Bang") }
+  let arg = AnonymousArg::{ bang: true, type_: inner }
+  assert_true(arg.bang)
+  guard arg.type_ is Ident(_) else { fail("expected Ident type") }
 }
 
 ///|

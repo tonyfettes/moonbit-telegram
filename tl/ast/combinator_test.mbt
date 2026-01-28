@@ -45,7 +45,10 @@ test "MultiplicityArg creation" {
     name: None,
     count: NatExpr::Const(4),
     args: [
-      Arg::Anonymous(TypeExpr::Ident(TypeIdent::{ ns: None, name: "int" })),
+      Arg::Anonymous({
+        bang: false,
+        type_: TypeExpr::Ident(TypeIdent::{ ns: None, name: "int" }),
+      }),
     ],
   }
   guard arg.count is NatExpr::Const(4) else { fail("expected Const(4)") }

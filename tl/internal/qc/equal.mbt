@@ -24,8 +24,6 @@ pub fn type_expr_equal(a : @ast.TypeExpr, b : @ast.TypeExpr) -> Bool {
   match (a, b) {
     (@ast.TypeExpr::Ident(i1), @ast.TypeExpr::Ident(i2)) =>
       type_ident_equal(i1, i2)
-    (@ast.TypeExpr::Bang(e1), @ast.TypeExpr::Bang(e2)) =>
-      type_expr_equal(e1, e2)
     (@ast.TypeExpr::Percent(e1), @ast.TypeExpr::Percent(e2)) =>
       type_expr_equal(e1, e2)
     (@ast.TypeExpr::Apply(i1, p1), @ast.TypeExpr::Apply(i2, p2)) =>
@@ -148,6 +146,15 @@ pub fn grouped_arg_equal(a : @ast.GroupedArg, b : @ast.GroupedArg) -> Bool {
 }
 
 ///|
+/// Compares two AnonymousArg values for equality.
+pub fn anonymous_arg_equal(
+  a : @ast.AnonymousArg,
+  b : @ast.AnonymousArg,
+) -> Bool {
+  a.bang == b.bang && type_expr_equal(a.type_, b.type_)
+}
+
+///|
 /// Compares two MultiplicityArg values for equality.
 pub fn multiplicity_arg_equal(
   a : @ast.MultiplicityArg,
@@ -168,8 +175,8 @@ pub fn arg_equal(a : @ast.Arg, b : @ast.Arg) -> Bool {
     (@ast.Arg::Multiplicity(m1), @ast.Arg::Multiplicity(m2)) =>
       multiplicity_arg_equal(m1, m2)
     (@ast.Arg::Grouped(g1), @ast.Arg::Grouped(g2)) => grouped_arg_equal(g1, g2)
-    (@ast.Arg::Anonymous(t1), @ast.Arg::Anonymous(t2)) =>
-      type_expr_equal(t1, t2)
+    (@ast.Arg::Anonymous(a1), @ast.Arg::Anonymous(a2)) =>
+      anonymous_arg_equal(a1, a2)
     _ => false
   }
 }

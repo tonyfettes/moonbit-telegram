@@ -165,7 +165,9 @@ test "Parser anonymous multiplicity" {
   guard schema.types[0] is Combinator(c) else { fail("expected Combinator") }
   // Should have # as first arg and [t] as second arg
   inspect(c.args.length(), content="2")
-  guard c.args[0] is Anonymous(Nat) else { fail("expected Anonymous Nat") }
+  guard c.args[0] is Anonymous({ type_: Nat, .. }) else {
+    fail("expected Anonymous Nat")
+  }
   guard c.args[1] is Multiplicity(_) else { fail("expected Multiplicity") }
 }
 

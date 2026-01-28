@@ -273,10 +273,6 @@ fn resolve_type_expr(
         raise UndefinedType(pos=span, name~)
       }
     }
-    @ast.TypeExpr::Bang(inner) =>
-      resolve_type_expr(
-        table, inner, span, type_vars, nat_vars, type_var_used, nat_var_used,
-      )
     @ast.TypeExpr::Percent(inner) =>
       resolve_type_expr(
         table, inner, span, type_vars, nat_vars, type_var_used, nat_var_used,
@@ -380,9 +376,15 @@ fn resolve_arg(
         type_var_used,
         nat_var_used,
       )
-    @ast.Arg::Anonymous(type_) =>
+    @ast.Arg::Anonymous(anon) =>
       resolve_type_expr(
-        table, type_, span, type_vars, nat_vars, type_var_used, nat_var_used,
+        table,
+        anon.type_,
+        span,
+        type_vars,
+        nat_vars,
+        type_var_used,
+        nat_var_used,
       )
   }
 }

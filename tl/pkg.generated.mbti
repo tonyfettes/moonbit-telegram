@@ -10,6 +10,10 @@ import {
 }
 
 // Values
+pub fn crc32(String) -> UInt
+
+pub fn normalize_combinator(@ast.Combinator) -> String
+
 pub fn parse(source~ : String) -> @ast.Schema raise @error.TLParseError
 
 pub fn schema_to_string(@ast.Schema) -> String
@@ -21,6 +25,8 @@ pub fn type_schema(@ast.Schema) -> @typer.SymbolTable raise @typer.TLTypeError
 // Types and methods
 
 // Type aliases
+pub using @ast {type AnonymousArg}
+
 pub using @ast {type Arg}
 
 pub using @ast {type Combinator}

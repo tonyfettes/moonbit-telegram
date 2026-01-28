@@ -21,12 +21,6 @@ fn gen_simple_type_expr_sized(size : Int) -> @qc.Gen[@ast.TypeExpr] {
       (
         1,
         gen_simple_type_expr_sized(smaller).fmap(fn(x) {
-          @ast.TypeExpr::Bang(x)
-        }),
-      ),
-      (
-        1,
-        gen_simple_type_expr_sized(smaller).fmap(fn(x) {
           @ast.TypeExpr::Percent(x)
         }),
       ),
@@ -46,12 +40,22 @@ fn gen_simple_named_arg() -> @qc.Gen[@ast.NamedArg] {
 }
 
 ///|
+/// Generates a simple AnonymousArg without variable references.
+fn gen_simple_anonymous_arg() -> @qc.Gen[@ast.AnonymousArg] {
+  @qc.liftA2(
+    fn(bang, type_) { { bang, type_ } },
+    gen_bool(),
+    gen_simple_type_expr(),
+  )
+}
+
+///|
 /// Generates a simple Arg (only Named, Grouped, Anonymous - no Optional or Multiplicity).
 pub fn gen_simple_arg() -> @qc.Gen[@ast.Arg] {
   @qc.frequency([
     (4, gen_simple_named_arg().fmap(fn(x) { @ast.Arg::Named(x) })),
     (2, gen_simple_grouped_arg().fmap(fn(x) { @ast.Arg::Grouped(x) })),
-    (2, gen_simple_type_expr().fmap(fn(x) { @ast.Arg::Anonymous(x) })),
+    (2, gen_simple_anonymous_arg().fmap(fn(x) { @ast.Arg::Anonymous(x) })),
   ])
 }
 

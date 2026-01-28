@@ -39,6 +39,13 @@ pub(all) struct GroupedArg {
 } derive(Show, Eq)
 
 ///|
+/// Anonymous type argument: !Type or Type
+pub(all) struct AnonymousArg {
+  bang : Bool
+  type_ : TypeExpr
+} derive(Show, Eq)
+
+///|
 /// Argument variants in a combinator
 pub(all) enum Arg {
   // Named arg: name:Type or name:flags.N?Type
@@ -50,7 +57,7 @@ pub(all) enum Arg {
   // Grouped args: (x y : Type)
   Grouped(GroupedArg)
   // Anonymous type: !Type or Type
-  Anonymous(TypeExpr)
+  Anonymous(AnonymousArg)
 } derive(Show, Eq)
 
 ///|
