@@ -39,6 +39,7 @@ pub(all) struct SymbolTable {
   types : Map[String, ResolvedType]
   ids : Map[UInt, @ast.Combinator]
   constructors : Map[String, @ast.Combinator]
+  functions : Map[String, @ast.Combinator]
   builtins : Map[String, Unit]
 }
 pub fn SymbolTable::new() -> Self

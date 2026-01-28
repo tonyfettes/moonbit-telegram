@@ -165,7 +165,20 @@ test "typer: functions section" {
     #|getUser id:long = User;
   let schema = parse_tl(source)
   let table = type_schema(schema)
-  assert_true(table.constructors.contains("getUser"))
+  assert_true(table.functions.contains("getUser"))
+  assert_true(not(table.constructors.contains("getUser")))
+}
+
+///|
+test "typer: function return type must be declared" {
+  let source =
+    #|---functions---
+    #|getFoo = Missing;
+  let schema = parse_tl(source)
+  let result = try? type_schema(schema)
+  guard result is Err(UndefinedType(name="Missing", ..)) else {
+    fail("expected UndefinedType error for Missing, got \{result}")
+  }
 }
 
 ///|

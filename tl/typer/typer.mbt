@@ -1,7 +1,7 @@
 ///|
 /// Type checks a TL schema and builds a symbol table.
 ///
-/// Returns a symbol table containing all resolved types and constructors,
+/// Returns a symbol table containing all resolved types, constructors, and functions,
 /// or raises a TLTypeError if validation fails.
 pub fn type_schema(schema : @ast.Schema) -> SymbolTable raise TLTypeError {
   let table = SymbolTable::new()
@@ -30,7 +30,7 @@ fn collect_declarations(
 
   // Process function declarations
   for f in schema.functions {
-    collect_combinator(table, f)
+    collect_function(table, f)
   }
 }
 
@@ -43,7 +43,7 @@ fn collect_combinator(
   let full_name = combinator_full_name(c)
 
   // Check for duplicate constructor name
-  if table.constructors.contains(full_name) {
+  if table.constructors.contains(full_name) || table.functions.contains(full_name) {
     raise DuplicateConstructorName(pos=c.span, name=full_name)
   }
   table.constructors[full_name] = c
@@ -65,6 +65,26 @@ fn collect_combinator(
     table.types[type_name] = ResolvedType::new(name=c.result.type_ident, constructors=[
       c,
     ])
+  }
+}
+
+///|
+/// Collects a function declaration.
+fn collect_function(
+  table : SymbolTable,
+  f : @ast.Combinator,
+) -> Unit raise TLTypeError {
+  let full_name = combinator_full_name(f)
+
+  // Check for duplicate function name (and cross-section collisions)
+  if table.functions.contains(full_name) || table.constructors.contains(full_name) {
+    raise DuplicateConstructorName(pos=f.span, name=full_name)
+  }
+  table.functions[full_name] = f
+
+  // Register function ID
+  if f.id is Some(id) {
+    table.ids[id] = f
   }
 }
 
@@ -99,13 +119,13 @@ fn resolve_schema(
   // Resolve type declarations
   for decl in schema.types {
     if decl is @ast.Declaration::Combinator(c) {
-      resolve_combinator(table, c)
+      resolve_combinator(table, c, false)
     }
   }
 
   // Resolve function declarations
   for f in schema.functions {
-    resolve_combinator(table, f)
+    resolve_combinator(table, f, true)
   }
 }
 
@@ -114,6 +134,7 @@ fn resolve_schema(
 fn resolve_combinator(
   table : SymbolTable,
   c : @ast.Combinator,
+  check_result_type : Bool,
 ) -> Unit raise TLTypeError {
   // Collect bound type variables from opt_args
   let type_vars : Map[String, Unit] = {}
@@ -153,6 +174,9 @@ fn resolve_combinator(
 
   // Resolve result type
   resolve_result_type(table, c.result, c.span, type_vars, nat_vars)
+  if check_result_type {
+    validate_result_type_name(table, c.result, c.span, type_vars)
+  }
 }
 
 ///|
@@ -274,8 +298,7 @@ fn resolve_result_type(
   type_vars : Map[String, Unit],
   nat_vars : Map[String, Unit],
 ) -> Unit raise TLTypeError {
-  // Result type is being defined by this combinator, so we don't need to check it exists
-  // We only need to resolve the params
+  // Result type is being defined by this combinator, so we only resolve params here.
 
   // Resolve params
   for param in result.params {
@@ -284,5 +307,23 @@ fn resolve_result_type(
         resolve_type_expr(table, t, span, type_vars, nat_vars)
       @ast.Expr::Nat(n) => resolve_nat_expr(n, span, nat_vars)
     }
+  }
+}
+
+///|
+/// Ensures function result type names refer to declared types or bound type variables.
+fn validate_result_type_name(
+  table : SymbolTable,
+  result : @ast.ResultType,
+  span : @ast.Span,
+  type_vars : Map[String, Unit],
+) -> Unit raise TLTypeError {
+  let name = type_ident_full_name(result.type_ident)
+  if not(
+      table.builtins.contains(name) ||
+      table.types.contains(name) ||
+      type_vars.contains(name),
+    ) {
+    raise UndefinedType(pos=span, name~)
   }
 }

@@ -32,6 +32,8 @@ pub(all) struct SymbolTable {
   ids : Map[UInt, @ast.Combinator]
   /// Map from constructor name (with namespace) to constructor
   constructors : Map[String, @ast.Combinator]
+  /// Map from function name (with namespace) to function
+  functions : Map[String, @ast.Combinator]
   /// Built-in types that don't need declarations
   builtins : Map[String, Unit]
 } derive(Show, Eq)
@@ -43,7 +45,7 @@ pub fn SymbolTable::new() -> SymbolTable {
   for name in builtin_types {
     builtins[name] = ()
   }
-  { types: {}, ids: {}, constructors: {}, builtins }
+  { types: {}, ids: {}, constructors: {}, functions: {}, builtins }
 }
 
 ///|
