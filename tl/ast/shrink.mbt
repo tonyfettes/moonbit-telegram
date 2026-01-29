@@ -45,76 +45,55 @@ pub impl @qc.Shrink for TypeIdent with shrink(self) {
 }
 
 ///|
-/// Shrink implementation for NatExpr.
-/// For recursive variants, first tries simpler base cases, then shrinks components.
-pub impl @qc.Shrink for NatExpr with shrink(self) {
+/// Shrink implementation for Term.
+pub impl @qc.Shrink for Term with shrink(self) {
   match self {
-    Const(n) =>
-      // Shrink the integer constant
-      @qc.Shrink::shrink(n).map(fn(n) { NatExpr::Const(n) })
-    Var(s) =>
-      // Shrink the variable name
-      @qc.Shrink::shrink(s).map(fn(s) { NatExpr::Var(s) })
-    Add(l, r) =>
-      // First try the simpler sub-expressions as replacements
-      Iter::singleton(l)
-      .concat(Iter::singleton(r))
-      // Then shrink left operand
-      .concat(@qc.Shrink::shrink(l).map(fn(l) { NatExpr::Add(l, r) }))
-      // Then shrink right operand
-      .concat(@qc.Shrink::shrink(r).map(fn(r) { NatExpr::Add(l, r) }))
-    Zero =>
-      // Zero is the simplest, no shrinking possible
-      Iter::empty()
-    Succ(n) =>
-      // First try the inner expression as replacement
-      Iter::singleton(n)
-      // Try Zero as simplest case
-      .concat(Iter::singleton(NatExpr::Zero))
-      // Then shrink the inner expression
-      .concat(@qc.Shrink::shrink(n).map(fn(n) { NatExpr::Succ(n) }))
+    Paren(e) =>
+      @qc.Shrink::shrink(e).map(fn(e) { Term::Paren(e) })
+    Ident(i) => @qc.Shrink::shrink(i).map(fn(i) { Term::Ident(i) })
+    Var(s) => @qc.Shrink::shrink(s).map(fn(s) { Term::Var(s) })
+    NatConst(n) =>
+      @qc.Shrink::shrink(n).map(fn(n) { Term::NatConst(n) })
+    Percent(t) =>
+      Iter::singleton(t)
+      .concat(@qc.Shrink::shrink(t).map(fn(t) { Term::Percent(t) }))
+    Apply(i, params) =>
+      Iter::singleton(Term::Ident(i))
+      .concat(@qc.Shrink::shrink(i).map(fn(i) { Term::Apply(i, params) }))
+      .concat(
+        @qc.Shrink::shrink(params).map(fn(params) { Term::Apply(i, params) }),
+      )
   }
 }
 
 ///|
-/// Shrink implementation for TypeExpr.
-/// For recursive variants, first tries simpler base cases, then shrinks components.
-pub impl @qc.Shrink for TypeExpr with shrink(self) {
+/// Shrink implementation for Subexpr.
+pub impl @qc.Shrink for Subexpr with shrink(self) {
   match self {
-    Ident(i) =>
-      // Shrink the type identifier
-      @qc.Shrink::shrink(i).map(fn(i) { TypeExpr::Ident(i) })
-    Percent(e) =>
-      // First try the inner expression as replacement
-      Iter::singleton(e)
-      // Then shrink the inner expression
-      .concat(@qc.Shrink::shrink(e).map(fn(e) { TypeExpr::Percent(e) }))
-    Apply(i, params) =>
-      // First try just the Ident without params
-      Iter::singleton(TypeExpr::Ident(i))
-      // Shrink the type identifier
-      .concat(@qc.Shrink::shrink(i).map(fn(i) { TypeExpr::Apply(i, params) }))
-      // Shrink the params array
+    Term(t) => @qc.Shrink::shrink(t).map(fn(t) { Subexpr::Term(t) })
+    AddLeft(n, right) =>
+      Iter::singleton(right)
       .concat(
-        @qc.Shrink::shrink(params).map(fn(params) { TypeExpr::Apply(i, params) }),
+        @qc.Shrink::shrink(n).map(fn(n) { Subexpr::AddLeft(n, right) }),
       )
-    Var(s) =>
-      // Shrink the variable name
-      @qc.Shrink::shrink(s).map(fn(s) { TypeExpr::Var(s) })
-    Nat =>
-      // Nat is the simplest type, no shrinking possible
-      Iter::empty()
+      .concat(
+        @qc.Shrink::shrink(right).map(fn(r) { Subexpr::AddLeft(n, r) }),
+      )
+    AddRight(left, n) =>
+      Iter::singleton(left)
+      .concat(
+        @qc.Shrink::shrink(left).map(fn(l) { Subexpr::AddRight(l, n) }),
+      )
+      .concat(
+        @qc.Shrink::shrink(n).map(fn(n) { Subexpr::AddRight(left, n) }),
+      )
   }
 }
 
 ///|
 /// Shrink implementation for Expr.
-/// Shrinks the contained expression.
 pub impl @qc.Shrink for Expr with shrink(self) {
-  match self {
-    Type(t) => @qc.Shrink::shrink(t).map(fn(t) { Expr::Type(t) })
-    Nat(n) => @qc.Shrink::shrink(n).map(fn(n) { Expr::Nat(n) })
-  }
+  @qc.Shrink::shrink(self.items).map(fn(items) { { items, } })
 }
 
 ///|

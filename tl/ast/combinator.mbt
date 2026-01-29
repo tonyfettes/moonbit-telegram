@@ -11,7 +11,7 @@ pub(all) struct NamedArg {
   name : String
   conditional : Conditional?
   bang : Bool // ! prefix
-  type_ : TypeExpr
+  type_ : Term
 } derive(Show, Eq)
 
 ///|
@@ -19,14 +19,14 @@ pub(all) struct NamedArg {
 pub(all) struct OptionalArg {
   names : Array[String] // Can have multiple: {x y : Type}
   bang : Bool
-  type_ : TypeExpr
+  type_ : Expr
 } derive(Show, Eq)
 
 ///|
 /// Multiplicity: 4*[int] or n*[type]
 pub(all) struct MultiplicityArg {
   name : String? // Optional name before :
-  count : NatExpr // 4 or n (variable)
+  count : Term // nat-term
   args : Array[Arg] // Nested args in [ ]
 } derive(Show, Eq)
 
@@ -35,14 +35,14 @@ pub(all) struct MultiplicityArg {
 pub(all) struct GroupedArg {
   names : Array[String]
   bang : Bool
-  type_ : TypeExpr
+  type_ : Term
 } derive(Show, Eq)
 
 ///|
 /// Anonymous type argument: !Type or Type
 pub(all) struct AnonymousArg {
   bang : Bool
-  type_ : TypeExpr
+  type_ : Term
 } derive(Show, Eq)
 
 ///|
@@ -62,7 +62,7 @@ pub(all) enum Arg {
 /// Result type of a combinator
 pub(all) struct ResultType {
   type_ident : TypeIdent
-  params : Array[Expr] // Type or nat params
+  params : Array[Subexpr] // Subexpressions
 } derive(Show, Eq)
 
 ///|

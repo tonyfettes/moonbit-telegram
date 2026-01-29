@@ -131,8 +131,10 @@ fn Parser::parse_combinator(self : Parser) -> @ast.Combinator raise ParseError {
   let start = self.current().span.start
   // Parse combinator name: lc-ident-ns or _
   let (ns, name) = self.parse_combinator_name()
+  let name_end = self.tokens[self.pos - 1].span.end
   // Parse optional hex ID: #hexdigits
-  let id : UInt? = if self.peek() is Hash {
+  let id : UInt? = if self.peek() is Hash &&
+      self.current().span.start.offset == name_end.offset {
     let _ = self.advance()
     match self.peek() {
       HexNumber(n) => {
@@ -141,7 +143,8 @@ fn Parser::parse_combinator(self : Parser) -> @ast.Combinator raise ParseError {
       }
       _ => None
     }
-  } else if self.peek() is HexNumber(n) {
+  } else if self.peek() is HexNumber(n) &&
+      self.current().span.start.offset == name_end.offset {
     let _ = self.advance()
     Some(n)
   } else {
@@ -261,7 +264,15 @@ fn Parser::parse_opt_args(
     } else {
       false
     }
-    let type_ = self.parse_type_expr()
+    let type_ = self.parse_expr_until([RBrace])
+    if type_.items.length() == 0 {
+      let token = self.current()
+      raise ParseError::UnexpectedToken(
+        pos=token.span.start,
+        expected="type expression",
+        found=token.kind.to_string(),
+      )
+    }
     let _ = self.expect(RBrace)
     result.push({ names, bang, type_ })
   }
@@ -286,7 +297,7 @@ fn Parser::parse_args(self : Parser) -> Array[@ast.Arg] raise ParseError {
 /// Parses a single argument.
 fn Parser::parse_arg(self : Parser) -> @ast.Arg raise ParseError {
   match self.peek() {
-    LParen => self.parse_grouped_arg()
+    LParen if self.lookahead_is_grouped_arg() => self.parse_grouped_arg()
     LBracket => {
       // Anonymous multiplicity: [ args ]
       let _ = self.advance() // [
@@ -294,70 +305,105 @@ fn Parser::parse_arg(self : Parser) -> @ast.Arg raise ParseError {
       let _ = self.expect(RBracket)
       @ast.Arg::Multiplicity({
         name: None,
-        count: @ast.NatExpr::Const(1),
-        args: inner_args,
-      })
-    }
-    LowerIdent(_) | UpperIdent(_) | Types | Functions =>
-      // Could be name:type, name:cond?type, or just type
-      if self.lookahead_is_named_arg() {
-        self.parse_named_arg()
-      } else {
-        // Anonymous type
-        let type_ = self.parse_type_expr()
-        @ast.Arg::Anonymous({ bang: false, type_ })
-      }
-    Bang => {
-      let _ = self.advance()
-      let type_ = self.parse_type_expr()
-      @ast.Arg::Anonymous({ bang: true, type_ })
-    }
-    Percent => {
-      let _ = self.advance()
-      let type_ = self.parse_type_expr()
-      @ast.Arg::Anonymous({ bang: false, type_: @ast.TypeExpr::Percent(type_) })
-    }
-    Hash => {
-      // Bare # as anonymous type
-      let _ = self.advance()
-      @ast.Arg::Anonymous({ bang: false, type_: @ast.TypeExpr::Nat })
-    }
-    Number(n) => {
-      // Multiplicity: 4*[...]
-      let _ = self.advance()
-      let _ = self.expect(Star)
-      let _ = self.expect(LBracket)
-      let inner_args = self.parse_bracket_args()
-      let _ = self.expect(RBracket)
-      @ast.Arg::Multiplicity({
-        name: None,
-        count: @ast.NatExpr::Const(n),
+        count: @ast.Term::NatConst(1),
         args: inner_args,
       })
     }
     _ => {
-      let token = self.current()
-      raise ParseError::UnexpectedToken(
-        pos=token.span.start,
-        expected="argument",
-        found=token.kind.to_string(),
-      )
+      if self.lookahead_is_named_arg() {
+        let parsed = self.parse_named_arg()
+        match parsed {
+          @ast.Arg::Named(named) if named.conditional is None && not(named.bang) &&
+            self.peek() is Star => {
+            let _ = self.advance()
+            let _ = self.expect(LBracket)
+            let inner_args = self.parse_bracket_args()
+            let _ = self.expect(RBracket)
+            return @ast.Arg::Multiplicity({
+              name: Some(named.name),
+              count: named.type_,
+              args: inner_args,
+            })
+          }
+          _ => return parsed
+        }
+      }
+      let bang = if self.peek() is Bang {
+        let _ = self.advance()
+        true
+      } else {
+        false
+      }
+      let term = self.parse_term()
+      if not(bang) && self.peek() is Star {
+        let _ = self.advance()
+        let _ = self.expect(LBracket)
+        let inner_args = self.parse_bracket_args()
+        let _ = self.expect(RBracket)
+        @ast.Arg::Multiplicity({ name: None, count: term, args: inner_args })
+      } else {
+        @ast.Arg::Anonymous({ bang, type_: term })
+      }
     }
   }
 }
 
 ///|
-/// Looks ahead to determine if this is a named arg (has : or . or ? after ident).
+/// Looks ahead to determine if this is a named arg (name: or flags.? forms).
 fn Parser::lookahead_is_named_arg(self : Parser) -> Bool {
   let saved = self.pos
-  // Skip first ident
+  // Only identifiers can start named args
+  match self.peek() {
+    LowerIdent(_) | UpperIdent(_) | Types | Functions => ()
+    _ => return false
+  }
   let _ = self.advance()
   let result = match self.peek() {
-    Colon | Dot | Question => true
+    Colon | Question => true
+    Dot => {
+      let _ = self.advance()
+      if self.peek() is Number(_) {
+        let _ = self.advance()
+        self.peek() is Question
+      } else {
+        false
+      }
+    }
     _ => false
   }
   self.pos = saved
   result
+}
+
+///|
+/// Looks ahead to determine if this is a grouped arg `(x y : Type)`.
+fn Parser::lookahead_is_grouped_arg(self : Parser) -> Bool {
+  let saved = self.pos
+  let mut depth = 0
+  let mut found_colon = false
+  let mut i = self.pos
+  while i < self.tokens.length() {
+    match self.tokens[i].kind {
+      LParen => {
+        depth += 1
+      }
+      RParen => {
+        if depth == 1 {
+          self.pos = saved
+          return found_colon
+        }
+        depth -= 1
+      }
+      Colon =>
+        if depth == 1 {
+          found_colon = true
+        }
+      _ => ()
+    }
+    i += 1
+  }
+  self.pos = saved
+  false
 }
 
 ///|
@@ -436,7 +482,7 @@ fn Parser::parse_named_arg(self : Parser) -> @ast.Arg raise ParseError {
     } else {
       false
     }
-    let type_ = self.parse_type_expr()
+    let type_ = self.parse_term()
     @ast.Arg::Named({ name: actual_name, conditional: Some(cond), bang, type_ })
   } else {
     // name is the field name, check for :
@@ -482,7 +528,7 @@ fn Parser::parse_named_arg(self : Parser) -> @ast.Arg raise ParseError {
     } else {
       false
     }
-    let type_ = self.parse_type_expr()
+    let type_ = self.parse_term()
     @ast.Arg::Named({ name, conditional: cond2, bang, type_ })
   }
 }
@@ -509,7 +555,7 @@ fn Parser::parse_grouped_arg(self : Parser) -> @ast.Arg raise ParseError {
   } else {
     false
   }
-  let type_ = self.parse_type_expr()
+  let type_ = self.parse_term()
   let _ = self.expect(RParen)
   @ast.Arg::Grouped({ names, bang, type_ })
 }
@@ -528,57 +574,6 @@ fn Parser::parse_bracket_args(
     result.push(self.parse_arg())
   }
   result
-}
-
-///|
-/// Parses a type expression.
-fn Parser::parse_type_expr(self : Parser) -> @ast.TypeExpr raise ParseError {
-  match self.peek() {
-    Percent => {
-      let _ = self.advance()
-      @ast.TypeExpr::Percent(self.parse_type_expr())
-    }
-    Hash => {
-      let _ = self.advance()
-      @ast.TypeExpr::Nat
-    }
-    LowerIdent(name) => {
-      let _ = self.advance()
-      // Check for namespace: name.Name
-      if self.peek() is Dot {
-        let _ = self.advance()
-        let type_name = self.parse_ident_name()
-        let ident = @ast.TypeIdent::new(name=type_name, ns=name)
-        self.parse_type_apply(ident)
-      } else if self.peek() is LAngle {
-        // Type application with lowercase name (e.g., vector<IpPort>)
-        let ident = @ast.TypeIdent::simple(name)
-        self.parse_type_apply(ident)
-      } else {
-        // Could be variable
-        @ast.TypeExpr::Var(name)
-      }
-    }
-    UpperIdent(name) => {
-      let _ = self.advance()
-      let ident = @ast.TypeIdent::simple(name)
-      self.parse_type_apply(ident)
-    }
-    LParen => {
-      let _ = self.advance()
-      let expr = self.parse_type_expr()
-      let _ = self.expect(RParen)
-      expr
-    }
-    _ => {
-      let token = self.current()
-      raise ParseError::UnexpectedToken(
-        pos=token.span.start,
-        expected="type expression",
-        found=token.kind.to_string(),
-      )
-    }
-  }
 }
 
 ///|
@@ -601,45 +596,193 @@ fn Parser::parse_ident_name(self : Parser) -> String raise ParseError {
 }
 
 ///|
-/// Parses type application if present: Type<...> or just Type.
-fn Parser::parse_type_apply(
-  self : Parser,
-  ident : @ast.TypeIdent,
-) -> @ast.TypeExpr raise ParseError {
-  if self.peek() is LAngle {
-    let _ = self.advance() // <
-    let params : Array[@ast.TypeExpr] = []
-    params.push(self.parse_type_expr())
-    while self.peek() is Comma {
+/// Parses a term.
+fn Parser::parse_term(self : Parser) -> @ast.Term raise ParseError {
+  match self.peek() {
+    LParen => {
       let _ = self.advance()
-      params.push(self.parse_type_expr())
+      let expr = self.parse_expr_until([RParen])
+      let _ = self.expect(RParen)
+      @ast.Term::Paren(expr)
     }
-    let _ = self.expect(RAngle)
-    @ast.TypeExpr::Apply(ident, params)
-  } else {
-    @ast.TypeExpr::Ident(ident)
+    Percent => {
+      let _ = self.advance()
+      @ast.Term::Percent(self.parse_term())
+    }
+    Hash => {
+      let _ = self.advance()
+      @ast.Term::Ident(@ast.TypeIdent::simple("#"))
+    }
+    Number(n) => {
+      let _ = self.advance()
+      @ast.Term::NatConst(n)
+    }
+    LowerIdent(name) => {
+      let _ = self.advance()
+      if self.peek() is Dot {
+        let _ = self.advance()
+        let type_name = self.parse_ident_name()
+        let ident = @ast.TypeIdent::new(name=type_name, ns=name)
+        self.parse_term_apply(ident)
+      } else if self.peek() is LAngle {
+        let ident = @ast.TypeIdent::simple(name)
+        self.parse_term_apply(ident)
+      } else {
+        @ast.Term::Var(name)
+      }
+    }
+    UpperIdent(name) => {
+      let _ = self.advance()
+      if self.peek() is Dot {
+        let _ = self.advance()
+        let type_name = self.parse_ident_name()
+        let ident = @ast.TypeIdent::new(name=type_name, ns=name)
+        self.parse_term_apply(ident)
+      } else if self.peek() is LAngle {
+        let ident = @ast.TypeIdent::simple(name)
+        self.parse_term_apply(ident)
+      } else {
+        @ast.Term::Ident(@ast.TypeIdent::simple(name))
+      }
+    }
+    _ => {
+      let token = self.current()
+      raise ParseError::UnexpectedToken(
+        pos=token.span.start,
+        expected="term",
+        found=token.kind.to_string(),
+      )
+    }
   }
 }
 
 ///|
-/// Parses a result type: type-ident { params } or type-ident < params >.
+/// Parses type application if present: Type<...> or just Type.
+fn Parser::parse_term_apply(
+  self : Parser,
+  ident : @ast.TypeIdent,
+) -> @ast.Term raise ParseError {
+  if self.peek() is LAngle {
+    let _ = self.advance() // <
+    let params : Array[@ast.Expr] = []
+    let first = self.parse_expr_until([Comma, RAngle])
+    if first.items.length() == 0 {
+      let token = self.current()
+      raise ParseError::UnexpectedToken(
+        pos=token.span.start,
+        expected="expression",
+        found=token.kind.to_string(),
+      )
+    }
+    params.push(first)
+    while self.peek() is Comma {
+      let _ = self.advance()
+      let expr = self.parse_expr_until([Comma, RAngle])
+      if expr.items.length() == 0 {
+        let token = self.current()
+        raise ParseError::UnexpectedToken(
+          pos=token.span.start,
+          expected="expression",
+          found=token.kind.to_string(),
+        )
+      }
+      params.push(expr)
+    }
+    let _ = self.expect(RAngle)
+    @ast.Term::Apply(ident, params)
+  } else {
+    @ast.Term::Ident(ident)
+  }
+}
+
+///|
+/// Parses a subexpression (term or nat-const addition).
+fn Parser::parse_subexpr(self : Parser) -> @ast.Subexpr raise ParseError {
+  if self.peek() is Number(n) && self.peek_next_is_plus() {
+    let _ = self.advance()
+    let _ = self.expect(Plus)
+    let right = self.parse_subexpr()
+    return @ast.Subexpr::AddLeft(n, right)
+  }
+  let mut result : @ast.Subexpr = @ast.Subexpr::Term(self.parse_term())
+  while self.peek() is Plus {
+    let _ = self.advance()
+    match self.peek() {
+      Number(n) => {
+        let _ = self.advance()
+        result = @ast.Subexpr::AddRight(result, n)
+      }
+      _ => {
+        let token = self.current()
+        raise ParseError::UnexpectedToken(
+          pos=token.span.start,
+          expected="nat constant after '+'",
+          found=token.kind.to_string(),
+        )
+      }
+    }
+  }
+  result
+}
+
+///|
+/// Parses an expression until a stop token is reached.
+fn Parser::parse_expr_until(
+  self : Parser,
+  stops : Array[@lexer.TokenKind],
+) -> @ast.Expr raise ParseError {
+  let items : Array[@ast.Subexpr] = []
+  while not(self.is_at_end()) {
+    self.skip_comments()
+    if self.is_stop_token(stops) {
+      break
+    }
+    items.push(self.parse_subexpr())
+  }
+  @ast.Expr::new(items~)
+}
+
+///|
+/// Returns true if the current token matches any stop token.
+fn Parser::is_stop_token(
+  self : Parser,
+  stops : Array[@lexer.TokenKind],
+) -> Bool {
+  for stop in stops {
+    if self.peek() == stop {
+      return true
+    }
+  }
+  false
+}
+
+///|
+/// Returns true if the next token is '+'.
+fn Parser::peek_next_is_plus(self : Parser) -> Bool {
+  let next = self.pos + 1
+  if next >= self.tokens.length() {
+    return false
+  }
+  self.tokens[next].kind is Plus
+}
+
+///|
+/// Parses a result type: type-ident { subexpr } or type-ident < subexpr >.
 fn Parser::parse_result_type(self : Parser) -> @ast.ResultType raise ParseError {
   let (ns, name) = self.parse_type_ident_name()
   let type_ident = @ast.TypeIdent::new(name~, ns?)
-  let params : Array[@ast.Expr] = []
+  let params : Array[@ast.Subexpr] = []
   if self.peek() is LAngle {
     let _ = self.advance()
-    params.push(self.parse_expr())
+    params.push(self.parse_subexpr())
     while self.peek() is Comma {
       let _ = self.advance()
-      params.push(self.parse_expr())
+      params.push(self.parse_subexpr())
     }
     let _ = self.expect(RAngle)
-
   } else {
-    // Parse trailing subexprs (space separated until ;)
     while not(self.peek() is Semicolon) && not(self.is_at_end()) {
-      params.push(self.parse_expr())
+      params.push(self.parse_subexpr())
     }
   }
   { type_ident, params }
@@ -671,190 +814,6 @@ fn Parser::parse_type_ident_name(
       raise ParseError::UnexpectedToken(
         pos=token.span.start,
         expected="type identifier",
-        found=token.kind.to_string(),
-      )
-    }
-  }
-}
-
-///|
-/// Parses an expression (type or nat).
-fn Parser::parse_expr(self : Parser) -> @ast.Expr raise ParseError {
-  match self.peek() {
-    Number(n) => {
-      let _ = self.advance()
-      // Check for + for nat arithmetic
-      if self.peek() is Plus {
-        let _ = self.advance()
-        let right = self.parse_nat_expr()
-        @ast.Expr::Nat(@ast.NatExpr::Add(@ast.NatExpr::Const(n), right))
-      } else {
-        @ast.Expr::Nat(@ast.NatExpr::Const(n))
-      }
-    }
-    LowerIdent(name) => {
-      // Could be nat var or type var
-      let saved = self.pos
-      let _ = self.advance()
-      if self.peek() is Plus {
-        let _ = self.advance()
-        let right = self.parse_nat_expr()
-        @ast.Expr::Nat(@ast.NatExpr::Add(@ast.NatExpr::Var(name), right))
-      } else if self.peek() is Dot {
-        // Namespace, restore and parse as type
-        self.pos = saved
-        @ast.Expr::Type(self.parse_type_expr())
-      } else {
-        // Ambiguous - could be nat var or type var
-        // In result context, assume type var
-        @ast.Expr::Type(@ast.TypeExpr::Var(name))
-      }
-    }
-    UpperIdent(name) =>
-      // Check for Peano numerals O and S
-      if name == "O" {
-        let _ = self.advance()
-        @ast.Expr::Nat(@ast.NatExpr::Zero)
-      } else if name == "S" {
-        let _ = self.advance()
-        let inner = self.parse_nat_expr_atom()
-        @ast.Expr::Nat(@ast.NatExpr::Succ(inner))
-      } else {
-        @ast.Expr::Type(self.parse_type_expr())
-      }
-    Bang | Percent | Hash => @ast.Expr::Type(self.parse_type_expr())
-    LParen => {
-      // Could be parenthesized Peano nat or type
-      let saved = self.pos
-      let _ = self.advance()
-      match self.peek() {
-        UpperIdent(name) =>
-          if name == "O" || name == "S" {
-            // It's a Peano nat expression
-            self.pos = saved
-            @ast.Expr::Nat(self.parse_nat_expr())
-          } else {
-            // It's a type expression
-            self.pos = saved
-            @ast.Expr::Type(self.parse_type_expr())
-          }
-        _ => {
-          // Restore and parse as type
-          self.pos = saved
-          @ast.Expr::Type(self.parse_type_expr())
-        }
-      }
-    }
-    _ => {
-      let token = self.current()
-      raise ParseError::UnexpectedToken(
-        pos=token.span.start,
-        expected="expression",
-        found=token.kind.to_string(),
-      )
-    }
-  }
-}
-
-///|
-/// Parses a nat expression: n or n+m or O or S n.
-fn Parser::parse_nat_expr(self : Parser) -> @ast.NatExpr raise ParseError {
-  match self.peek() {
-    Number(n) => {
-      let _ = self.advance()
-      if self.peek() is Plus {
-        let _ = self.advance()
-        let right = self.parse_nat_expr()
-        @ast.NatExpr::Add(@ast.NatExpr::Const(n), right)
-      } else {
-        @ast.NatExpr::Const(n)
-      }
-    }
-    UpperIdent(name) =>
-      if name == "O" {
-        // Peano zero
-        let _ = self.advance()
-        @ast.NatExpr::Zero
-      } else if name == "S" {
-        // Peano successor
-        let _ = self.advance()
-        let inner = self.parse_nat_expr_atom()
-        @ast.NatExpr::Succ(inner)
-      } else {
-        let token = self.current()
-        raise ParseError::UnexpectedToken(
-          pos=token.span.start,
-          expected="nat expression",
-          found=token.kind.to_string(),
-        )
-      }
-    LowerIdent(name) => {
-      let _ = self.advance()
-      if self.peek() is Plus {
-        let _ = self.advance()
-        let right = self.parse_nat_expr()
-        @ast.NatExpr::Add(@ast.NatExpr::Var(name), right)
-      } else {
-        @ast.NatExpr::Var(name)
-      }
-    }
-    LParen => {
-      // Parenthesized nat expression
-      let _ = self.advance()
-      let expr = self.parse_nat_expr()
-      let _ = self.expect(RParen)
-      expr
-    }
-    _ => {
-      let token = self.current()
-      raise ParseError::UnexpectedToken(
-        pos=token.span.start,
-        expected="nat expression",
-        found=token.kind.to_string(),
-      )
-    }
-  }
-}
-
-///|
-/// Parses a nat expression atom (for Succ argument).
-fn Parser::parse_nat_expr_atom(self : Parser) -> @ast.NatExpr raise ParseError {
-  match self.peek() {
-    Number(n) => {
-      let _ = self.advance()
-      @ast.NatExpr::Const(n)
-    }
-    UpperIdent(name) =>
-      if name == "O" {
-        let _ = self.advance()
-        @ast.NatExpr::Zero
-      } else if name == "S" {
-        let _ = self.advance()
-        let inner = self.parse_nat_expr_atom()
-        @ast.NatExpr::Succ(inner)
-      } else {
-        let token = self.current()
-        raise ParseError::UnexpectedToken(
-          pos=token.span.start,
-          expected="nat expression",
-          found=token.kind.to_string(),
-        )
-      }
-    LowerIdent(name) => {
-      let _ = self.advance()
-      @ast.NatExpr::Var(name)
-    }
-    LParen => {
-      let _ = self.advance()
-      let expr = self.parse_nat_expr()
-      let _ = self.expect(RParen)
-      expr
-    }
-    _ => {
-      let token = self.current()
-      raise ParseError::UnexpectedToken(
-        pos=token.span.start,
-        expected="nat expression",
         found=token.kind.to_string(),
       )
     }

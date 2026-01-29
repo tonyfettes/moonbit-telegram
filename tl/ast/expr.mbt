@@ -1,14 +1,4 @@
 ///|
-/// Natural number expressions for type arithmetic.
-pub(all) enum NatExpr {
-  Const(Int) // literal like 4, 8
-  Var(String) // variable like n, dif
-  Add(NatExpr, NatExpr) // addition like n+dif
-  Zero // O (Peano zero)
-  Succ(NatExpr) // S n (Peano successor)
-} derive(Show, Eq)
-
-///|
 /// Type identifier with optional namespace.
 pub(all) struct TypeIdent {
   ns : String? // e.g., "auth" in auth.SentCode
@@ -34,23 +24,32 @@ pub fn TypeIdent::namespaced(ns : String, name : String) -> TypeIdent {
 }
 
 ///|
-/// Type expressions.
-pub(all) enum TypeExpr {
-  // Named type reference (bare or boxed based on case)
-  Ident(TypeIdent)
-  // % prefix for bare type reference
-  Percent(TypeExpr)
-  // Generic application: Vector<int>, Tuple<t, n>
-  Apply(TypeIdent, Array[TypeExpr])
-  // Variable reference in generic context
-  Var(String)
-  // Natural number type (#)
-  Nat
+/// Term in TL expressions (type-term/nat-term).
+pub(all) enum Term {
+  Paren(Expr) // (expr)
+  Ident(TypeIdent) // type-ident (including "#")
+  Var(String) // var-ident
+  NatConst(Int) // nat-const
+  Percent(Term) // % term
+  Apply(TypeIdent, Array[Expr]) // type-ident<expr, ...>
 } derive(Show, Eq)
 
 ///|
-/// Generic expression (type or nat).
-pub(all) enum Expr {
-  Type(TypeExpr)
-  Nat(NatExpr)
+/// Subexpression with optional nat-const addition.
+pub(all) enum Subexpr {
+  Term(Term)
+  AddLeft(Int, Subexpr) // nat-const + subexpr
+  AddRight(Subexpr, Int) // subexpr + nat-const
 } derive(Show, Eq)
+
+///|
+/// Expression: sequence of subexpressions (application by juxtaposition).
+pub(all) struct Expr {
+  items : Array[Subexpr]
+} derive(Show, Eq)
+
+///|
+/// Creates a new expression from subexpressions.
+pub fn Expr::new(items~ : Array[Subexpr]) -> Expr {
+  { items, }
+}

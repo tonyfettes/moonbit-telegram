@@ -13,7 +13,12 @@ pub fn gen_lower_ident() -> @qc.Gen[String] {
       let sb = StringBuilder::new()
       sb.write_char(c)
       sb.write_string(s)
-      sb.to_string()
+      let name = sb.to_string()
+      if name == "functions" || name == "types" {
+        name + "_x"
+      } else {
+        name
+      }
     },
     first,
     rest,
@@ -56,7 +61,13 @@ pub fn gen_upper_ident() -> @qc.Gen[String] {
       let sb = StringBuilder::new()
       sb.write_char(c)
       sb.write_string(s)
-      sb.to_string()
+      let name = sb.to_string()
+      if name == "O" || name == "S" ||
+        name == "New" || name == "Final" || name == "Empty" {
+        name + "1"
+      } else {
+        name
+      }
     },
     first,
     rest,

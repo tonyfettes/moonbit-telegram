@@ -11,7 +11,7 @@ test "NamedArg creation" {
     name: "id",
     conditional: None,
     bang: false,
-    type_: TypeExpr::Ident(TypeIdent::{ ns: None, name: "long" }),
+    type_: Term::Ident(TypeIdent::{ ns: None, name: "long" }),
   }
   inspect(arg.name, content="id")
   assert_false(arg.bang)
@@ -23,7 +23,7 @@ test "NamedArg with conditional" {
     name: "first_name",
     conditional: Some(Conditional::{ var_name: "flags", bit_index: Some(0) }),
     bang: false,
-    type_: TypeExpr::Ident(TypeIdent::{ ns: None, name: "string" }),
+    type_: Term::Ident(TypeIdent::{ ns: None, name: "string" }),
   }
   guard arg.conditional is Some(cond) else { fail("expected conditional") }
   inspect(cond.bit_index, content="Some(0)")
@@ -34,7 +34,9 @@ test "OptionalArg creation" {
   let arg = OptionalArg::{
     names: ["t"],
     bang: false,
-    type_: TypeExpr::Ident(TypeIdent::{ ns: None, name: "Type" }),
+    type_: Expr::new(items=[
+      Subexpr::Term(Term::Ident(TypeIdent::{ ns: None, name: "Type" })),
+    ]),
   }
   inspect(arg.names.length(), content="1")
 }
@@ -43,15 +45,15 @@ test "OptionalArg creation" {
 test "MultiplicityArg creation" {
   let arg = MultiplicityArg::{
     name: None,
-    count: NatExpr::Const(4),
+    count: Term::NatConst(4),
     args: [
       Arg::Anonymous({
         bang: false,
-        type_: TypeExpr::Ident(TypeIdent::{ ns: None, name: "int" }),
+        type_: Term::Ident(TypeIdent::{ ns: None, name: "int" }),
       }),
     ],
   }
-  guard arg.count is NatExpr::Const(4) else { fail("expected Const(4)") }
+  guard arg.count is Term::NatConst(4) else { fail("expected Const(4)") }
 }
 
 ///|

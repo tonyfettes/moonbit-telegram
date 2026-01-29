@@ -1,63 +1,103 @@
 ///|
-/// Compares two NatExpr values for equality.
-pub fn nat_expr_equal(a : @ast.NatExpr, b : @ast.NatExpr) -> Bool {
-  match (a, b) {
-    (@ast.NatExpr::Const(n1), @ast.NatExpr::Const(n2)) => n1 == n2
-    (@ast.NatExpr::Var(s1), @ast.NatExpr::Var(s2)) => s1 == s2
-    (@ast.NatExpr::Add(l1, r1), @ast.NatExpr::Add(l2, r2)) =>
-      nat_expr_equal(l1, l2) && nat_expr_equal(r1, r2)
-    (@ast.NatExpr::Zero, @ast.NatExpr::Zero) => true
-    (@ast.NatExpr::Succ(n1), @ast.NatExpr::Succ(n2)) => nat_expr_equal(n1, n2)
-    _ => false
-  }
-}
-
-///|
 /// Compares two TypeIdent values for equality.
 pub fn type_ident_equal(a : @ast.TypeIdent, b : @ast.TypeIdent) -> Bool {
   a.ns == b.ns && a.name == b.name
 }
 
 ///|
-/// Compares two TypeExpr values for equality.
-pub fn type_expr_equal(a : @ast.TypeExpr, b : @ast.TypeExpr) -> Bool {
+/// Compares two Term values for equality.
+pub fn term_equal(a : @ast.Term, b : @ast.Term) -> Bool {
   match (a, b) {
-    (@ast.TypeExpr::Ident(i1), @ast.TypeExpr::Ident(i2)) =>
+    (@ast.Term::Paren(e1), @ast.Term::Paren(e2)) => expr_equal(e1, e2)
+    (@ast.Term::Ident(i1), @ast.Term::Ident(i2)) =>
       type_ident_equal(i1, i2)
-    (@ast.TypeExpr::Percent(e1), @ast.TypeExpr::Percent(e2)) =>
-      type_expr_equal(e1, e2)
-    (@ast.TypeExpr::Apply(i1, p1), @ast.TypeExpr::Apply(i2, p2)) =>
-      type_ident_equal(i1, i2) && type_expr_array_equal(p1, p2)
-    (@ast.TypeExpr::Var(s1), @ast.TypeExpr::Var(s2)) => s1 == s2
-    (@ast.TypeExpr::Nat, @ast.TypeExpr::Nat) => true
+    (@ast.Term::Ident(i1), @ast.Term::Var(s2)) =>
+      i1.ns == None && i1.name == s2
+    (@ast.Term::Var(s1), @ast.Term::Var(s2)) => s1 == s2
+    (@ast.Term::Var(s1), @ast.Term::Ident(i2)) =>
+      i2.ns == None && i2.name == s1
+    (@ast.Term::NatConst(n1), @ast.Term::NatConst(n2)) => n1 == n2
+    (@ast.Term::Percent(t1), @ast.Term::Percent(t2)) =>
+      term_equal(t1, t2)
+    (@ast.Term::Apply(i1, p1), @ast.Term::Apply(i2, p2)) =>
+      type_ident_equal(i1, i2) && expr_array_equal(p1, p2)
     _ => false
   }
 }
 
 ///|
-fn type_expr_array_equal(
-  a : Array[@ast.TypeExpr],
-  b : Array[@ast.TypeExpr],
-) -> Bool {
-  if a.length() != b.length() {
-    return false
+/// Compares two Subexpr values for equality.
+pub fn subexpr_equal(a : @ast.Subexpr, b : @ast.Subexpr) -> Bool {
+  match (a, b) {
+    (@ast.Subexpr::Term(t1), @ast.Subexpr::Term(t2)) => term_equal(t1, t2)
+    (@ast.Subexpr::AddLeft(n1, r1), @ast.Subexpr::AddLeft(n2, r2)) =>
+      n1 == n2 && subexpr_equal(r1, r2)
+    (@ast.Subexpr::AddRight(l1, n1), @ast.Subexpr::AddRight(l2, n2)) =>
+      n1 == n2 && subexpr_equal(l1, l2)
+    _ => false
   }
-  for i = 0; i < a.length(); i = i + 1 {
-    if not(type_expr_equal(a[i], b[i])) {
-      return false
+}
+
+///|
+fn type_ident_to_string(ident : @ast.TypeIdent) -> String {
+  if ident.ns is Some(ns) {
+    ns + "." + ident.name
+  } else {
+    ident.name
+  }
+}
+
+///|
+fn term_to_string(term : @ast.Term) -> String {
+  match term {
+    @ast.Term::Paren(expr) => "(" + expr_to_string(expr) + ")"
+    @ast.Term::Ident(ident) => type_ident_to_string(ident)
+    @ast.Term::Var(name) => name
+    @ast.Term::NatConst(n) => n.to_string()
+    @ast.Term::Percent(inner) => "%" + term_to_string(inner)
+    @ast.Term::Apply(ident, params) => {
+      let sb = StringBuilder::new()
+      sb.write_string(type_ident_to_string(ident))
+      sb.write_char('<')
+      for i, p in params {
+        if i > 0 {
+          sb.write_string(", ")
+        }
+        sb.write_string(expr_to_string(p))
+      }
+      sb.write_char('>')
+      sb.to_string()
     }
   }
-  true
+}
+
+///|
+fn subexpr_to_string(expr : @ast.Subexpr) -> String {
+  match expr {
+    @ast.Subexpr::Term(term) => term_to_string(term)
+    @ast.Subexpr::AddLeft(n, right) =>
+      n.to_string() + "+" + subexpr_to_string(right)
+    @ast.Subexpr::AddRight(left, n) =>
+      subexpr_to_string(left) + "+" + n.to_string()
+  }
+}
+
+///|
+fn expr_to_string(expr : @ast.Expr) -> String {
+  let sb = StringBuilder::new()
+  for i, item in expr.items {
+    if i > 0 {
+      sb.write_char(' ')
+    }
+    sb.write_string(subexpr_to_string(item))
+  }
+  sb.to_string()
 }
 
 ///|
 /// Compares two Expr values for equality.
 pub fn expr_equal(a : @ast.Expr, b : @ast.Expr) -> Bool {
-  match (a, b) {
-    (@ast.Expr::Type(t1), @ast.Expr::Type(t2)) => type_expr_equal(t1, t2)
-    (@ast.Expr::Nat(n1), @ast.Expr::Nat(n2)) => nat_expr_equal(n1, n2)
-    _ => false
-  }
+  subexpr_array_equal(a.items, b.items)
 }
 
 ///|
@@ -67,6 +107,22 @@ fn expr_array_equal(a : Array[@ast.Expr], b : Array[@ast.Expr]) -> Bool {
   }
   for i = 0; i < a.length(); i = i + 1 {
     if not(expr_equal(a[i], b[i])) {
+      return false
+    }
+  }
+  true
+}
+
+///|
+fn subexpr_array_equal(
+  a : Array[@ast.Subexpr],
+  b : Array[@ast.Subexpr],
+) -> Bool {
+  if a.length() != b.length() {
+    return false
+  }
+  for i = 0; i < a.length(); i = i + 1 {
+    if not(subexpr_equal(a[i], b[i])) {
       return false
     }
   }
@@ -97,7 +153,7 @@ pub fn named_arg_equal(a : @ast.NamedArg, b : @ast.NamedArg) -> Bool {
   a.name == b.name &&
   optional_conditional_equal(a.conditional, b.conditional) &&
   a.bang == b.bang &&
-  type_expr_equal(a.type_, b.type_)
+  term_equal(a.type_, b.type_)
 }
 
 ///|
@@ -105,7 +161,7 @@ pub fn named_arg_equal(a : @ast.NamedArg, b : @ast.NamedArg) -> Bool {
 pub fn optional_arg_equal(a : @ast.OptionalArg, b : @ast.OptionalArg) -> Bool {
   string_array_equal(a.names, b.names) &&
   a.bang == b.bang &&
-  type_expr_equal(a.type_, b.type_)
+  expr_equal(a.type_, b.type_)
 }
 
 ///|
@@ -142,7 +198,7 @@ fn optional_arg_array_equal(
 pub fn grouped_arg_equal(a : @ast.GroupedArg, b : @ast.GroupedArg) -> Bool {
   string_array_equal(a.names, b.names) &&
   a.bang == b.bang &&
-  type_expr_equal(a.type_, b.type_)
+  term_equal(a.type_, b.type_)
 }
 
 ///|
@@ -151,7 +207,7 @@ pub fn anonymous_arg_equal(
   a : @ast.AnonymousArg,
   b : @ast.AnonymousArg,
 ) -> Bool {
-  a.bang == b.bang && type_expr_equal(a.type_, b.type_)
+  a.bang == b.bang && term_equal(a.type_, b.type_)
 }
 
 ///|
@@ -161,7 +217,7 @@ pub fn multiplicity_arg_equal(
   b : @ast.MultiplicityArg,
 ) -> Bool {
   a.name == b.name &&
-  nat_expr_equal(a.count, b.count) &&
+  term_equal(a.count, b.count) &&
   arg_array_equal(a.args, b.args)
 }
 
@@ -196,7 +252,7 @@ fn arg_array_equal(a : Array[@ast.Arg], b : Array[@ast.Arg]) -> Bool {
 /// Compares two ResultType values for equality.
 pub fn result_type_equal(a : @ast.ResultType, b : @ast.ResultType) -> Bool {
   type_ident_equal(a.type_ident, b.type_ident) &&
-  expr_array_equal(a.params, b.params)
+  subexpr_array_equal(a.params, b.params)
 }
 
 ///|

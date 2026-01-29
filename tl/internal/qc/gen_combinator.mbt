@@ -4,18 +4,18 @@ pub fn gen_result_type() -> @qc.Gen[@ast.ResultType] {
   @qc.liftA2(
     fn(type_ident, params) { { type_ident, params } },
     gen_type_ident(),
-    gen_expr_array(),
+    gen_subexpr_array(),
   )
 }
 
 ///|
-fn gen_expr_array() -> @qc.Gen[Array[@ast.Expr]] {
+fn gen_subexpr_array() -> @qc.Gen[Array[@ast.Subexpr]] {
   @qc.int_bound(3).bind(fn(len) {
     if len == 0 {
       @qc.pure([])
     } else {
       @qc.Gen::new(fn(size, rs) {
-        Array::makei(len, fn(_) { gen_expr().run(size, rs) })
+        Array::makei(len, fn(_) { gen_subexpr().run(size, rs) })
       })
     }
   })

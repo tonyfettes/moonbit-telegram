@@ -208,7 +208,7 @@ test "typer: Peano zero in result type" {
 
 ///|
 test "typer: Peano successor in result type" {
-  let schema = parse_tl("cons {n:#} head:int tail:List n = List (S n);")
+  let schema = parse_tl("cons {n:#} head:int tail:List<n> = List (S n);")
   let table = type_schema(schema)
   assert_true(table.types.contains("List"))
 }

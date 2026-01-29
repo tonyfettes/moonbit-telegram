@@ -1,31 +1,49 @@
-///|
-/// Generates a simple TypeExpr without variable references.
-/// Use this for round-trip testing where we don't track context.
-pub fn gen_simple_type_expr() -> @qc.Gen[@ast.TypeExpr] {
-  @qc.sized(fn(size) { gen_simple_type_expr_sized(size) })
+/// Generates a simple Term without variable references.
+fn gen_simple_term() -> @qc.Gen[@ast.Term] {
+  @qc.frequency([
+    (4, gen_term_type_ident().fmap(fn(i) { @ast.Term::Ident(i) })),
+    (2, @qc.small_int().fmap(fn(n) { @ast.Term::NatConst(abs_int(n)) })),
+    (1, @qc.pure(@ast.Term::Ident(@ast.TypeIdent::simple("#")))),
+    (
+      1,
+      gen_term_type_ident().fmap(fn(i) { @ast.Term::Percent(@ast.Term::Ident(i)) }),
+    ),
+  ])
 }
 
 ///|
-fn gen_simple_type_expr_sized(size : Int) -> @qc.Gen[@ast.TypeExpr] {
-  if size <= 0 {
-    // Base cases: Ident, Nat only (no Var)
-    @qc.frequency([
-      (5, gen_type_ident().fmap(fn(i) { @ast.TypeExpr::Ident(i) })),
-      (1, @qc.pure(@ast.TypeExpr::Nat)),
-    ])
-  } else {
-    let smaller = size / 2
-    @qc.frequency([
-      (5, gen_type_ident().fmap(fn(i) { @ast.TypeExpr::Ident(i) })),
-      (1, @qc.pure(@ast.TypeExpr::Nat)),
-      (
-        1,
-        gen_simple_type_expr_sized(smaller).fmap(fn(x) {
-          @ast.TypeExpr::Percent(x)
-        }),
+/// Generates a simple Subexpr without variable references.
+fn gen_simple_subexpr() -> @qc.Gen[@ast.Subexpr] {
+  @qc.frequency([
+    (4, gen_simple_term().fmap(fn(t) { @ast.Subexpr::Term(t) })),
+    (
+      1,
+      @qc.liftA2(
+        fn(n, right) { @ast.Subexpr::AddLeft(abs_int(n), right) },
+        @qc.small_int(),
+        gen_simple_subexpr(),
       ),
-    ])
-  }
+    ),
+    (
+      1,
+      @qc.liftA2(
+        fn(left, n) { @ast.Subexpr::AddRight(wrap_add_right_left(left), abs_int(n)) },
+        gen_simple_subexpr(),
+        @qc.small_int(),
+      ),
+    ),
+  ])
+}
+
+///|
+/// Generates a simple Expr without variable references.
+pub fn gen_simple_expr() -> @qc.Gen[@ast.Expr] {
+  @qc.int_range(1, 3).bind(fn(len) {
+    @qc.Gen::new(fn(size, rs) {
+      let items = Array::makei(len, fn(_) { gen_simple_subexpr().run(size, rs) })
+      @ast.Expr::new(items~)
+    })
+  })
 }
 
 ///|
@@ -35,7 +53,7 @@ fn gen_simple_named_arg() -> @qc.Gen[@ast.NamedArg] {
     fn(name, bang, type_) { { name, conditional: None, bang, type_ } },
     gen_lower_ident(),
     gen_bool(),
-    gen_simple_type_expr(),
+    gen_simple_term(),
   )
 }
 
@@ -45,7 +63,7 @@ fn gen_simple_anonymous_arg() -> @qc.Gen[@ast.AnonymousArg] {
   @qc.liftA2(
     fn(bang, type_) { { bang, type_ } },
     gen_bool(),
-    gen_simple_type_expr(),
+    gen_simple_term(),
   )
 }
 
@@ -65,7 +83,7 @@ fn gen_simple_grouped_arg() -> @qc.Gen[@ast.GroupedArg] {
     fn(names, bang, type_) { { names, bang, type_ } },
     gen_names_array(),
     gen_bool(),
-    gen_simple_type_expr(),
+    gen_simple_term(),
   )
 }
 
@@ -83,57 +101,13 @@ fn gen_simple_args_array() -> @qc.Gen[Array[@ast.Arg]] {
 }
 
 ///|
-/// Generates a simple Expr without variable references.
-pub fn gen_simple_expr() -> @qc.Gen[@ast.Expr] {
-  @qc.frequency([
-    (3, gen_simple_type_expr().fmap(fn(t) { @ast.Expr::Type(t) })),
-    (1, gen_simple_nat_expr().fmap(fn(n) { @ast.Expr::Nat(n) })),
-  ])
-}
-
-///|
-/// Generates a simple NatExpr without variable references.
-pub fn gen_simple_nat_expr() -> @qc.Gen[@ast.NatExpr] {
-  @qc.sized(fn(size) { gen_simple_nat_expr_sized(size) })
-}
-
-///|
-fn gen_simple_nat_expr_sized(size : Int) -> @qc.Gen[@ast.NatExpr] {
-  if size <= 0 {
-    // Base cases only - no Var
-    @qc.frequency([
-      (4, @qc.small_int().fmap(fn(n) { @ast.NatExpr::Const(n.abs()) })),
-      (1, @qc.pure(@ast.NatExpr::Zero)),
-    ])
-  } else {
-    let smaller = size / 2
-    @qc.frequency([
-      (4, @qc.small_int().fmap(fn(n) { @ast.NatExpr::Const(n.abs()) })),
-      (1, @qc.pure(@ast.NatExpr::Zero)),
-      (
-        1,
-        @qc.liftA2(
-          fn(l, r) { @ast.NatExpr::Add(l, r) },
-          gen_simple_nat_expr_sized(smaller),
-          gen_simple_nat_expr_sized(smaller),
-        ),
-      ),
-      (
-        1,
-        gen_simple_nat_expr_sized(smaller).fmap(fn(x) { @ast.NatExpr::Succ(x) }),
-      ),
-    ])
-  }
-}
-
-///|
-fn gen_simple_expr_array() -> @qc.Gen[Array[@ast.Expr]] {
+fn gen_simple_subexpr_array() -> @qc.Gen[Array[@ast.Subexpr]] {
   @qc.int_bound(3).bind(fn(len) {
     if len == 0 {
       @qc.pure([])
     } else {
       @qc.Gen::new(fn(size, rs) {
-        Array::makei(len, fn(_) { gen_simple_expr().run(size, rs) })
+        Array::makei(len, fn(_) { gen_simple_subexpr().run(size, rs) })
       })
     }
   })
@@ -145,7 +119,7 @@ fn gen_simple_result_type() -> @qc.Gen[@ast.ResultType] {
   @qc.liftA2(
     fn(type_ident, params) { { type_ident, params } },
     gen_type_ident(),
-    gen_simple_expr_array(),
+    gen_simple_subexpr_array(),
   )
 }
 

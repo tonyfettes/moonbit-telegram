@@ -1,18 +1,4 @@
 ///|
-test "NatExpr const" {
-  let expr = NatExpr::Const(42)
-  inspect(expr, content="Const(42)")
-}
-
-///|
-test "NatExpr add" {
-  let n = NatExpr::Var("n")
-  let dif = NatExpr::Var("dif")
-  let sum = NatExpr::Add(n, dif)
-  inspect(sum, content="Add(Var(\"n\"), Var(\"dif\"))")
-}
-
-///|
 test "TypeIdent simple" {
   let ident = TypeIdent::simple("User")
   inspect(ident.name, content="User")
@@ -27,47 +13,33 @@ test "TypeIdent namespaced" {
 }
 
 ///|
-test "TypeExpr Ident" {
-  let expr = TypeExpr::Ident(TypeIdent::simple("User"))
-  guard expr is Ident(ident) else { fail("expected Ident") }
+test "Term Ident" {
+  let term = Term::Ident(TypeIdent::simple("User"))
+  guard term is Ident(ident) else { fail("expected Ident") }
   inspect(ident.name, content="User")
 }
 
 ///|
-test "TypeExpr Apply" {
+test "Term Apply" {
   let vector = TypeIdent::simple("Vector")
-  let int_type = TypeExpr::Ident(TypeIdent::simple("int"))
-  let expr = TypeExpr::Apply(vector, [int_type])
-  guard expr is Apply(ident, args) else { fail("expected Apply") }
+  let arg = Expr::new(items=[Subexpr::Term(Term::Var("t"))])
+  let term = Term::Apply(vector, [arg])
+  guard term is Apply(ident, params) else { fail("expected Apply") }
   inspect(ident.name, content="Vector")
-  inspect(args.length(), content="1")
+  inspect(params.length(), content="1")
 }
 
 ///|
-test "AnonymousArg with bang" {
-  let inner = TypeExpr::Ident(TypeIdent::simple("InputReplyTo"))
-  let arg = AnonymousArg::{ bang: true, type_: inner }
-  assert_true(arg.bang)
-  guard arg.type_ is Ident(_) else { fail("expected Ident type") }
+test "Subexpr add" {
+  let sub = Subexpr::AddRight(Subexpr::Term(Term::Var("n")), 1)
+  guard sub is AddRight(_, 1) else { fail("expected AddRight") }
 }
 
 ///|
-test "TypeExpr Percent" {
-  let inner = TypeExpr::Apply(TypeIdent::simple("Vector"), [TypeExpr::Var("t")])
-  let expr = TypeExpr::Percent(inner)
-  guard expr is Percent(_) else { fail("expected Percent") }
-}
-
-///|
-test "Expr Type" {
-  let type_expr = TypeExpr::Nat
-  let expr = Expr::Type(type_expr)
-  guard expr is Type(TypeExpr::Nat) else { fail("expected Type(Nat)") }
-}
-
-///|
-test "Expr Nat" {
-  let nat_expr = NatExpr::Const(4)
-  let expr = Expr::Nat(nat_expr)
-  guard expr is Nat(NatExpr::Const(4)) else { fail("expected Nat(Const(4))") }
+test "Expr sequence" {
+  let expr = Expr::new(items=[
+    Subexpr::Term(Term::Var("A")),
+    Subexpr::Term(Term::Var("B")),
+  ])
+  inspect(expr.items.length(), content="2")
 }

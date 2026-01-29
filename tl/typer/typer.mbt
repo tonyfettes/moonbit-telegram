@@ -165,15 +165,16 @@ fn resolve_combinator(
   c : @ast.Combinator,
   check_result_type : Bool,
 ) -> Unit raise TLTypeError {
-  // Collect bound type variables from opt_args
+  // Collect bound type/nat variables from opt_args
   let type_vars : Map[String, Unit] = {}
   let nat_vars : Map[String, Unit] = {}
   // Track which optional parameters are used (only for opt_args, not flags fields)
   let type_var_used : Map[String, Bool] = {}
   let nat_var_used : Map[String, Bool] = {}
   for opt in c.opt_args {
+    let is_nat = is_hash_expr(opt.type_)
     for name in opt.names {
-      if opt.type_ is @ast.TypeExpr::Nat {
+      if is_nat {
         nat_vars[name] = ()
         nat_var_used[name] = false
       } else {
@@ -188,7 +189,7 @@ fn resolve_combinator(
   for arg in c.args {
     match arg {
       @ast.Arg::Named(named) =>
-        if named.type_ is @ast.TypeExpr::Nat {
+        if is_hash_term(named.type_) {
           flags_fields[named.name] = ()
           nat_vars[named.name] = ()
         }
@@ -198,7 +199,7 @@ fn resolve_combinator(
 
   // Resolve opt_args types
   for opt in c.opt_args {
-    resolve_type_expr(
+    resolve_expr_auto(
       table,
       opt.type_,
       c.span,
@@ -251,66 +252,6 @@ fn resolve_combinator(
 }
 
 ///|
-/// Resolves a type expression.
-fn resolve_type_expr(
-  table : SymbolTable,
-  expr : @ast.TypeExpr,
-  span : @ast.Span,
-  type_vars : Map[String, Unit],
-  nat_vars : Map[String, Unit],
-  type_var_used : Map[String, Bool],
-  nat_var_used : Map[String, Bool],
-) -> Unit raise TLTypeError {
-  match expr {
-    @ast.TypeExpr::Ident(ident) => {
-      let name = type_ident_full_name(ident)
-      // Check if it's a builtin, declared type, or type variable
-      if not(
-          table.builtins.contains(name) ||
-          table.types.contains(name) ||
-          type_vars.contains(name),
-        ) {
-        raise UndefinedType(pos=span, name~)
-      }
-    }
-    @ast.TypeExpr::Percent(inner) =>
-      resolve_type_expr(
-        table, inner, span, type_vars, nat_vars, type_var_used, nat_var_used,
-      )
-    @ast.TypeExpr::Apply(ident, params) => {
-      let name = type_ident_full_name(ident)
-      if not(table.builtins.contains(name) || table.types.contains(name)) {
-        raise UndefinedType(pos=span, name~)
-      }
-      for param in params {
-        resolve_type_expr(
-          table, param, span, type_vars, nat_vars, type_var_used, nat_var_used,
-        )
-      }
-    }
-    @ast.TypeExpr::Var(name) => {
-      // Variables can be type variables, nat variables, or built-in types
-      // Due to parser ambiguity, nat variables might appear as type vars
-      if not(
-          type_vars.contains(name) ||
-          nat_vars.contains(name) ||
-          table.builtins.contains(name),
-        ) {
-        raise UnboundTypeVariable(pos=span, variable=name)
-      }
-      // Mark variable as used
-      if type_var_used.contains(name) {
-        type_var_used[name] = true
-      }
-      if nat_var_used.contains(name) {
-        nat_var_used[name] = true
-      }
-    }
-    @ast.TypeExpr::Nat => ()
-  }
-}
-
-///|
 /// Resolves an argument.
 fn resolve_arg(
   table : SymbolTable,
@@ -334,7 +275,7 @@ fn resolve_arg(
           )
         }
       }
-      resolve_type_expr(
+      resolve_term_type(
         table,
         named.type_,
         span,
@@ -346,7 +287,7 @@ fn resolve_arg(
     }
     @ast.Arg::Multiplicity(mult) => {
       // Check multiplicity count variable
-      resolve_nat_expr(mult.count, span, nat_vars, nat_var_used)
+      resolve_term_nat(table, mult.count, span, nat_vars, nat_var_used)
       // Resolve nested args
       for nested in mult.args {
         resolve_arg(
@@ -356,7 +297,7 @@ fn resolve_arg(
       }
     }
     @ast.Arg::Grouped(grouped) =>
-      resolve_type_expr(
+      resolve_term_type(
         table,
         grouped.type_,
         span,
@@ -366,7 +307,7 @@ fn resolve_arg(
         nat_var_used,
       )
     @ast.Arg::Anonymous(anon) =>
-      resolve_type_expr(
+      resolve_term_type(
         table,
         anon.type_,
         span,
@@ -375,36 +316,6 @@ fn resolve_arg(
         type_var_used,
         nat_var_used,
       )
-  }
-}
-
-///|
-/// Resolves a natural number expression.
-fn resolve_nat_expr(
-  expr : @ast.NatExpr,
-  span : @ast.Span,
-  nat_vars : Map[String, Unit],
-  nat_var_used : Map[String, Bool],
-) -> Unit raise TLTypeError {
-  match expr {
-    @ast.NatExpr::Const(_) => ()
-    @ast.NatExpr::Var(name) => {
-      if not(nat_vars.contains(name)) {
-        raise UnboundNatVariable(pos=span, variable=name)
-      }
-      // Mark variable as used
-      if nat_var_used.contains(name) {
-        nat_var_used[name] = true
-      }
-    }
-    @ast.NatExpr::Add(left, right) => {
-      resolve_nat_expr(left, span, nat_vars, nat_var_used)
-      resolve_nat_expr(right, span, nat_vars, nat_var_used)
-    }
-    @ast.NatExpr::Zero => () // Peano zero, no validation needed
-    @ast.NatExpr::Succ(inner) =>
-      // Peano successor, recursively validate inner
-      resolve_nat_expr(inner, span, nat_vars, nat_var_used)
   }
 }
 
@@ -428,13 +339,298 @@ fn resolve_result_type(
 
   // Resolve params
   for param in result.params {
-    match param {
-      @ast.Expr::Type(t) =>
-        resolve_type_expr(
-          table, t, span, type_vars, nat_vars, type_var_used, nat_var_used,
-        )
-      @ast.Expr::Nat(n) => resolve_nat_expr(n, span, nat_vars, nat_var_used)
+    if subexpr_has_nat_hint(param, nat_vars) {
+      resolve_subexpr_nat(table, param, span, nat_vars, nat_var_used)
+    } else {
+      resolve_subexpr_type(
+        table,
+        param,
+        span,
+        type_vars,
+        nat_vars,
+        type_var_used,
+        nat_var_used,
+      )
     }
+  }
+}
+
+///|
+/// Returns true if a term is the builtin "#" type.
+fn is_hash_term(term : @ast.Term) -> Bool {
+  match term {
+    @ast.Term::Ident(ident) => ident.ns is None && ident.name == "#"
+    _ => false
+  }
+}
+
+///|
+/// Returns true if an expression is exactly "#".
+fn is_hash_expr(expr : @ast.Expr) -> Bool {
+  match expr.items {
+    [@ast.Subexpr::Term(term)] => is_hash_term(term)
+    _ => false
+  }
+}
+
+///|
+/// Returns true if a name starts with an uppercase ASCII letter.
+fn is_upper_name(name : String) -> Bool {
+  if name.length() == 0 {
+    false
+  } else {
+    let c : UInt16 = name[0]
+    c >= ('A' : UInt16) && c <= ('Z' : UInt16)
+  }
+}
+
+///|
+/// Checks whether a term hints a nat expression (constants, O/S, or nat vars).
+fn term_has_nat_hint(term : @ast.Term, nat_vars : Map[String, Unit]) -> Bool {
+  match term {
+    @ast.Term::NatConst(_) => true
+    @ast.Term::Var(name) =>
+      nat_vars.contains(name) || name == "O" || name == "S"
+    @ast.Term::Ident(ident) =>
+      ident.ns is None &&
+      (ident.name == "O" || ident.name == "S" || nat_vars.contains(ident.name))
+    @ast.Term::Apply(ident, _) =>
+      ident.ns is None && (ident.name == "O" || ident.name == "S")
+    @ast.Term::Paren(expr) => expr_has_nat_hint(expr, nat_vars)
+    @ast.Term::Percent(_) => false
+  }
+}
+
+///|
+/// Checks whether a subexpression hints a nat expression.
+fn subexpr_has_nat_hint(
+  expr : @ast.Subexpr,
+  nat_vars : Map[String, Unit],
+) -> Bool {
+  match expr {
+    @ast.Subexpr::AddLeft(_, _) => true
+    @ast.Subexpr::AddRight(_, _) => true
+    @ast.Subexpr::Term(term) => term_has_nat_hint(term, nat_vars)
+  }
+}
+
+///|
+/// Checks whether any subexpression in an expression hints nat.
+fn expr_has_nat_hint(expr : @ast.Expr, nat_vars : Map[String, Unit]) -> Bool {
+  for item in expr.items {
+    if subexpr_has_nat_hint(item, nat_vars) {
+      return true
+    }
+  }
+  false
+}
+
+///|
+/// Resolves a type expression, disambiguating nat subexpressions by syntax hints.
+fn resolve_expr_auto(
+  table : SymbolTable,
+  expr : @ast.Expr,
+  span : @ast.Span,
+  type_vars : Map[String, Unit],
+  nat_vars : Map[String, Unit],
+  type_var_used : Map[String, Bool],
+  nat_var_used : Map[String, Bool],
+) -> Unit raise TLTypeError {
+  for item in expr.items {
+    if subexpr_has_nat_hint(item, nat_vars) {
+      resolve_subexpr_nat(table, item, span, nat_vars, nat_var_used)
+    } else {
+      resolve_subexpr_type(
+        table,
+        item,
+        span,
+        type_vars,
+        nat_vars,
+        type_var_used,
+        nat_var_used,
+      )
+    }
+  }
+}
+
+///|
+/// Resolves a nat expression.
+fn resolve_expr_nat(
+  table : SymbolTable,
+  expr : @ast.Expr,
+  span : @ast.Span,
+  nat_vars : Map[String, Unit],
+  nat_var_used : Map[String, Bool],
+) -> Unit raise TLTypeError {
+  for item in expr.items {
+    resolve_subexpr_nat(table, item, span, nat_vars, nat_var_used)
+  }
+}
+
+///|
+/// Resolves a subexpression as a type expression.
+fn resolve_subexpr_type(
+  table : SymbolTable,
+  expr : @ast.Subexpr,
+  span : @ast.Span,
+  type_vars : Map[String, Unit],
+  nat_vars : Map[String, Unit],
+  type_var_used : Map[String, Bool],
+  nat_var_used : Map[String, Bool],
+) -> Unit raise TLTypeError {
+  match expr {
+    @ast.Subexpr::Term(term) =>
+      resolve_term_type(
+        table,
+        term,
+        span,
+        type_vars,
+        nat_vars,
+        type_var_used,
+        nat_var_used,
+      )
+    @ast.Subexpr::AddLeft(_, _) | @ast.Subexpr::AddRight(_, _) =>
+      resolve_subexpr_nat(table, expr, span, nat_vars, nat_var_used)
+  }
+}
+
+///|
+/// Resolves a subexpression as a nat expression.
+fn resolve_subexpr_nat(
+  table : SymbolTable,
+  expr : @ast.Subexpr,
+  span : @ast.Span,
+  nat_vars : Map[String, Unit],
+  nat_var_used : Map[String, Bool],
+) -> Unit raise TLTypeError {
+  match expr {
+    @ast.Subexpr::AddLeft(_, right) =>
+      resolve_subexpr_nat(table, right, span, nat_vars, nat_var_used)
+    @ast.Subexpr::AddRight(left, _) =>
+      resolve_subexpr_nat(table, left, span, nat_vars, nat_var_used)
+    @ast.Subexpr::Term(term) =>
+      resolve_term_nat(table, term, span, nat_vars, nat_var_used)
+  }
+}
+
+///|
+/// Resolves a term as a type expression.
+fn resolve_term_type(
+  table : SymbolTable,
+  term : @ast.Term,
+  span : @ast.Span,
+  type_vars : Map[String, Unit],
+  nat_vars : Map[String, Unit],
+  type_var_used : Map[String, Bool],
+  nat_var_used : Map[String, Bool],
+) -> Unit raise TLTypeError {
+  match term {
+    @ast.Term::Paren(expr) =>
+      resolve_expr_auto(
+        table,
+        expr,
+        span,
+        type_vars,
+        nat_vars,
+        type_var_used,
+        nat_var_used,
+      )
+    @ast.Term::Percent(inner) =>
+      resolve_term_type(
+        table,
+        inner,
+        span,
+        type_vars,
+        nat_vars,
+        type_var_used,
+        nat_var_used,
+      )
+    @ast.Term::Apply(ident, params) => {
+      let name = type_ident_full_name(ident)
+      if not(table.builtins.contains(name) || table.types.contains(name)) {
+        raise UndefinedType(pos=span, name~)
+      }
+      for param in params {
+        resolve_expr_auto(
+          table,
+          param,
+          span,
+          type_vars,
+          nat_vars,
+          type_var_used,
+          nat_var_used,
+        )
+      }
+    }
+    @ast.Term::Ident(ident) => {
+      let name = type_ident_full_name(ident)
+      if ident.ns is None && type_vars.contains(name) {
+        type_var_used[name] = true
+      } else if ident.ns is None && nat_vars.contains(name) {
+        nat_var_used[name] = true
+      } else if not(table.builtins.contains(name) || table.types.contains(name)) {
+        raise UndefinedType(pos=span, name~)
+      }
+    }
+    @ast.Term::Var(name) => {
+      if type_vars.contains(name) {
+        type_var_used[name] = true
+      } else if nat_vars.contains(name) {
+        nat_var_used[name] = true
+      } else if table.builtins.contains(name) || table.types.contains(name) {
+        ()
+      } else {
+        if is_upper_name(name) {
+          raise UndefinedType(pos=span, name~)
+        } else {
+          raise UnboundTypeVariable(pos=span, variable=name)
+        }
+      }
+    }
+    @ast.Term::NatConst(_) => ()
+  }
+}
+
+///|
+/// Resolves a term as a nat expression.
+fn resolve_term_nat(
+  table : SymbolTable,
+  term : @ast.Term,
+  span : @ast.Span,
+  nat_vars : Map[String, Unit],
+  nat_var_used : Map[String, Bool],
+) -> Unit raise TLTypeError {
+  match term {
+    @ast.Term::Paren(expr) => resolve_expr_nat(table, expr, span, nat_vars, nat_var_used)
+    @ast.Term::NatConst(_) => ()
+    @ast.Term::Var(name) => {
+      if nat_vars.contains(name) {
+        nat_var_used[name] = true
+      } else if name == "O" || name == "S" {
+        ()
+      } else {
+        raise UnboundNatVariable(pos=span, variable=name)
+      }
+    }
+    @ast.Term::Ident(ident) => {
+      if ident.ns is None && (ident.name == "O" || ident.name == "S") {
+        ()
+      } else {
+        let name = type_ident_full_name(ident)
+        raise UndefinedType(pos=span, name~)
+      }
+    }
+    @ast.Term::Apply(ident, params) => {
+      if ident.ns is None && (ident.name == "O" || ident.name == "S") {
+        for param in params {
+          resolve_expr_nat(table, param, span, nat_vars, nat_var_used)
+        }
+      } else {
+        let name = type_ident_full_name(ident)
+        raise UndefinedType(pos=span, name~)
+      }
+    }
+    @ast.Term::Percent(_) => raise UndefinedType(pos=span, name="%")
   }
 }
 

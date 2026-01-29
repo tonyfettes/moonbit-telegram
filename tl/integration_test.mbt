@@ -23,7 +23,7 @@ test "Integration: int128 multiplicity" {
   let schema = parse(source~)
   guard schema.types[0] is Combinator(c) else { fail("expected Combinator") }
   guard c.args[0] is Multiplicity(m) else { fail("expected Multiplicity") }
-  guard m.count is Const(4) else { fail("expected count 4") }
+  guard m.count is NatConst(4) else { fail("expected count 4") }
 }
 
 ///|
@@ -94,7 +94,8 @@ test "Integration: tuple definition" {
   let schema = parse(source~)
   guard schema.types[0] is Combinator(c) else { fail("expected Combinator") }
   inspect(c.opt_args.length(), content="2")
-  guard c.opt_args[1].type_ is Nat else { fail("expected Nat type") }
+  guard c.opt_args[1].type_.items[0] is Term(Ident(ident)) &&
+    ident.name == "#" else { fail("expected # type") }
 }
 
 ///|

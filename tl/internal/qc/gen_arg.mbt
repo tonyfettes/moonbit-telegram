@@ -30,7 +30,7 @@ pub fn gen_named_arg() -> @qc.Gen[@ast.NamedArg] {
     gen_lower_ident(),
     gen_conditional(),
     gen_bool(),
-    gen_type_expr(),
+    gen_term(),
   )
 }
 
@@ -46,7 +46,7 @@ pub fn gen_optional_arg() -> @qc.Gen[@ast.OptionalArg] {
     fn(names, bang, type_) { { names, bang, type_ } },
     gen_names_array(),
     gen_bool(),
-    gen_type_expr(),
+    gen_expr(),
   )
 }
 
@@ -70,7 +70,7 @@ fn gen_multiplicity_arg_sized(size : Int) -> @qc.Gen[@ast.MultiplicityArg] {
   @qc.liftA3(
     fn(name, count, args) { { name, count, args } },
     gen_optional_name(),
-    gen_nat_expr(),
+    gen_term(),
     gen_arg_array(size / 2),
   )
 }
@@ -102,14 +102,14 @@ pub fn gen_grouped_arg() -> @qc.Gen[@ast.GroupedArg] {
     fn(names, bang, type_) { { names, bang, type_ } },
     gen_names_array(),
     gen_bool(),
-    gen_type_expr(),
+    gen_term(),
   )
 }
 
 ///|
 /// Generates an AnonymousArg.
 pub fn gen_anonymous_arg() -> @qc.Gen[@ast.AnonymousArg] {
-  @qc.liftA2(fn(bang, type_) { { bang, type_ } }, gen_bool(), gen_type_expr())
+  @qc.liftA2(fn(bang, type_) { { bang, type_ } }, gen_bool(), gen_term())
 }
 
 ///|

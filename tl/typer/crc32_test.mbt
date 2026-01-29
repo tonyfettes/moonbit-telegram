@@ -29,7 +29,7 @@ test "normalize_combinator: simple" {
         name: "x",
         conditional: None,
         bang: false,
-        type_: @ast.TypeExpr::Ident({ ns: None, name: "int" }),
+        type_: @ast.Term::Var("int"),
       }),
     ],
     result: { type_ident: { ns: None, name: "Foo" }, params: [] },

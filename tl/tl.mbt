@@ -6,9 +6,9 @@
 pub using @ast {
   type Position,
   type Span,
-  type NatExpr,
   type TypeIdent,
-  type TypeExpr,
+  type Term,
+  type Subexpr,
   type Expr,
   type Conditional,
   type NamedArg,
@@ -128,7 +128,7 @@ fn combinator_to_string(c : @ast.Combinator) -> String {
     if opt.bang {
       sb.write_char('!')
     }
-    sb.write_string(type_expr_to_string(opt.type_))
+    sb.write_string(expr_to_string(opt.type_))
     sb.write_char('}')
   }
 
@@ -171,28 +171,6 @@ fn uint_to_hex(n : UInt) -> String {
 }
 
 ///|
-fn type_expr_to_string(expr : @ast.TypeExpr) -> String {
-  match expr {
-    @ast.TypeExpr::Ident(ident) => type_ident_to_string(ident)
-    @ast.TypeExpr::Percent(inner) => "%" + type_expr_to_string(inner)
-    @ast.TypeExpr::Apply(ident, params) => {
-      let sb = StringBuilder::new()
-      sb.write_string(type_ident_to_string(ident))
-      sb.write_char('<')
-      for i, p in params {
-        if i > 0 {
-          sb.write_string(", ")
-        }
-        sb.write_string(type_expr_to_string(p))
-      }
-      sb.write_char('>')
-      sb.to_string()
-    }
-    @ast.TypeExpr::Var(name) => name
-    @ast.TypeExpr::Nat => "#"
-  }
-}
-
 ///|
 fn type_ident_to_string(ident : @ast.TypeIdent) -> String {
   if ident.ns is Some(ns) {
@@ -210,7 +188,7 @@ fn arg_to_string(arg : @ast.Arg) -> String {
     @ast.Arg::Grouped(grouped) => grouped_arg_to_string(grouped)
     @ast.Arg::Anonymous(anon) => {
       let prefix = if anon.bang { "!" } else { "" }
-      prefix + type_expr_to_string(anon.type_)
+      prefix + term_to_string(anon.type_)
     }
   }
 }
@@ -231,7 +209,7 @@ fn named_arg_to_string(arg : @ast.NamedArg) -> String {
   if arg.bang {
     sb.write_char('!')
   }
-  sb.write_string(type_expr_to_string(arg.type_))
+  sb.write_string(term_to_string(arg.type_))
   sb.to_string()
 }
 
@@ -242,7 +220,7 @@ fn multiplicity_arg_to_string(mult : @ast.MultiplicityArg) -> String {
     sb.write_string(name)
     sb.write_char(':')
   }
-  sb.write_string(nat_expr_to_string(mult.count))
+  sb.write_string(term_to_string(mult.count))
   sb.write_string("*[")
   for i, a in mult.args {
     if i > 0 {
@@ -263,20 +241,43 @@ fn grouped_arg_to_string(grouped : @ast.GroupedArg) -> String {
   if grouped.bang {
     sb.write_char('!')
   }
-  sb.write_string(type_expr_to_string(grouped.type_))
+  sb.write_string(term_to_string(grouped.type_))
   sb.write_char(')')
   sb.to_string()
 }
 
 ///|
-fn nat_expr_to_string(expr : @ast.NatExpr) -> String {
+fn term_to_string(term : @ast.Term) -> String {
+  match term {
+    @ast.Term::Paren(expr) => "(" + expr_to_string(expr) + ")"
+    @ast.Term::Ident(ident) => type_ident_to_string(ident)
+    @ast.Term::Var(name) => name
+    @ast.Term::NatConst(n) => n.to_string()
+    @ast.Term::Percent(inner) => "%" + term_to_string(inner)
+    @ast.Term::Apply(ident, params) => {
+      let sb = StringBuilder::new()
+      sb.write_string(type_ident_to_string(ident))
+      sb.write_char('<')
+      for i, p in params {
+        if i > 0 {
+          sb.write_string(", ")
+        }
+        sb.write_string(expr_to_string(p))
+      }
+      sb.write_char('>')
+      sb.to_string()
+    }
+  }
+}
+
+///|
+fn subexpr_to_string(expr : @ast.Subexpr) -> String {
   match expr {
-    @ast.NatExpr::Const(n) => n.to_string()
-    @ast.NatExpr::Var(name) => name
-    @ast.NatExpr::Add(left, right) =>
-      nat_expr_to_string(left) + "+" + nat_expr_to_string(right)
-    @ast.NatExpr::Zero => "O"
-    @ast.NatExpr::Succ(inner) => "S " + nat_expr_to_string(inner)
+    @ast.Subexpr::Term(term) => term_to_string(term)
+    @ast.Subexpr::AddLeft(n, right) =>
+      n.to_string() + "+" + subexpr_to_string(right)
+    @ast.Subexpr::AddRight(left, n) =>
+      subexpr_to_string(left) + "+" + n.to_string()
   }
 }
 
@@ -286,17 +287,21 @@ fn result_type_to_string(result : @ast.ResultType) -> String {
   sb.write_string(type_ident_to_string(result.type_ident))
   for param in result.params {
     sb.write_char(' ')
-    sb.write_string(expr_to_string(param))
+    sb.write_string(subexpr_to_string(param))
   }
   sb.to_string()
 }
 
 ///|
 fn expr_to_string(expr : @ast.Expr) -> String {
-  match expr {
-    @ast.Expr::Type(t) => type_expr_to_string(t)
-    @ast.Expr::Nat(n) => nat_expr_to_string(n)
+  let sb = StringBuilder::new()
+  for i, item in expr.items {
+    if i > 0 {
+      sb.write_char(' ')
+    }
+    sb.write_string(subexpr_to_string(item))
   }
+  sb.to_string()
 }
 
 ///|

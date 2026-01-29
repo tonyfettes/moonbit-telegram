@@ -9,7 +9,9 @@
 /// could be addressed by normalizing the AST or refactoring it.
 test "parse/print round-trip preserves schema structure" {
   @qc.quick_check(
-    @qc.forall(@internal_qc.gen_schema(), fn(schema) {
+    @qc.forall_shrink(@internal_qc.gen_schema(), @qc.Shrink::shrink, fn(
+      schema,
+    ) {
       let printed = @tl.schema_to_string(schema)
       let reparsed = try? @tl.parse(source=printed)
       match reparsed {

@@ -15,7 +15,7 @@ fn gen_schema_with_undefined_type() -> @qc.Gen[@ast.Schema] {
         name: "x",
         conditional: None,
         bang: false,
-        type_: @ast.TypeExpr::Ident(undefined_ident),
+        type_: @ast.Term::Ident(undefined_ident),
       })
       let result : @ast.ResultType = {
         type_ident: @ast.TypeIdent::simple(result_type_name),
