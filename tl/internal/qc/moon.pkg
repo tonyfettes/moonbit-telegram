@@ -1,0 +1,4 @@
+import {
+  "tonyfettes/telegram/tl/ast",
+  "moonbitlang/quickcheck" as @qc,
+}
