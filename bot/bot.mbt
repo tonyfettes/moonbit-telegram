@@ -3056,7 +3056,7 @@ pub async fn Bot::delete_webhook(
 ///|
 /// Use this method to get current webhook status.
 /// On success, returns a WebhookInfo object.
-pub async fn Bot::get_webhook_info(self : Bot) -> Json raise TelegramError {
+pub async fn Bot::get_webhook_info(self : Bot) -> WebhookInfo raise TelegramError {
   let url = self.api_url("getWebhookInfo")
   let (response, data) = @http.get(url, headers={
     "Content-Type": "application/json",
@@ -3738,6 +3738,326 @@ pub async fn Bot::get_chat_member(
   let body : Map[String, Json] = {
     "chat_id": @json.to_json(chat_id),
     "user_id": @json.to_json(user_id),
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to send a checklist.
+/// On success, sent Message is returned.
+pub async fn Bot::send_checklist(
+  self : Bot,
+  business_connection_id? : String,
+  chat_id~ : Int64,
+  message_thread_id? : Int,
+  checklist~ : InputChecklist,
+) -> Message raise TelegramError {
+  let url = self.api_url("sendChecklist")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "checklist": @json.to_json(checklist),
+  }
+  if business_connection_id is Some(v) {
+    body["business_connection_id"] = @json.to_json(v)
+  }
+  if message_thread_id is Some(v) {
+    body["message_thread_id"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to send draft text messages.
+/// This method allows streaming partial messages.
+/// On success, MessageId of the sent message is returned.
+pub async fn Bot::send_message_draft(
+  self : Bot,
+  chat_id~ : ChatId,
+  text~ : String,
+  message_thread_id? : Int,
+  direct_messages_topic_id? : Int,
+  business_connection_id? : String,
+  parse_mode? : String,
+  entities? : Array[MessageEntity],
+  link_preview_options? : LinkPreviewOptions,
+  disable_web_page_preview? : Bool,
+) -> MessageId raise TelegramError {
+  let url = self.api_url("sendMessageDraft")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "text": @json.to_json(text),
+  }
+  if message_thread_id is Some(v) {
+    body["message_thread_id"] = @json.to_json(v)
+  }
+  if direct_messages_topic_id is Some(v) {
+    body["direct_messages_topic_id"] = @json.to_json(v)
+  }
+  if business_connection_id is Some(v) {
+    body["business_connection_id"] = @json.to_json(v)
+  }
+  if parse_mode is Some(v) {
+    body["parse_mode"] = @json.to_json(v)
+  }
+  if entities is Some(v) {
+    body["entities"] = @json.ToJson::to_json(v)
+  }
+  if link_preview_options is Some(v) {
+    body["link_preview_options"] = @json.to_json(v)
+  }
+  if disable_web_page_preview is Some(v) {
+    body["disable_web_page_preview"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to edit a checklist attached to a message.
+/// On success, edited Message is returned.
+pub async fn Bot::edit_message_checklist(
+  self : Bot,
+  business_connection_id? : String,
+  chat_id? : Int64,
+  message_id? : Int,
+  inline_message_id? : String,
+  reply_to_message_id? : Int,
+  checklist~ : InputChecklist,
+) -> Message raise TelegramError {
+  let url = self.api_url("editMessageChecklist")
+  let body : Map[String, Json] = { "checklist": @json.to_json(checklist) }
+  if business_connection_id is Some(v) {
+    body["business_connection_id"] = @json.to_json(v)
+  }
+  if chat_id is Some(v) {
+    body["chat_id"] = @json.to_json(v)
+  }
+  if message_id is Some(v) {
+    body["message_id"] = @json.to_json(v)
+  }
+  if inline_message_id is Some(v) {
+    body["inline_message_id"] = @json.to_json(v)
+  }
+  if reply_to_message_id is Some(v) {
+    body["reply_to_message_id"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to get list of gifts that can be sent by user.
+/// Returns Gifts on success.
+pub async fn Bot::get_user_gifts(
+  self : Bot,
+  offset? : Int,
+  limit? : Int,
+) -> Gifts raise TelegramError {
+  let url = self.api_url("getUserGifts")
+  let body : Map[String, Json] = {}
+  if offset is Some(v) {
+    body["offset"] = @json.to_json(v)
+  }
+  if limit is Some(v) {
+    body["limit"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to get list of gifts that were sent to user.
+/// Returns Gifts on success.
+pub async fn Bot::get_chat_gifts(
+  self : Bot,
+  chat_id~ : ChatId,
+  offset? : Int,
+  limit? : Int,
+) -> Gifts raise TelegramError {
+  let url = self.api_url("getChatGifts")
+  let body : Map[String, Json] = { "chat_id": @json.to_json(chat_id) }
+  if offset is Some(v) {
+    body["offset"] = @json.to_json(v)
+  }
+  if limit is Some(v) {
+    body["limit"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to get number of Telegram Stars that can be spent by bot.
+/// Returns StarBalance on success.
+pub async fn Bot::get_my_star_balance(self : Bot) -> StarBalance raise TelegramError {
+  let url = self.api_url("getMyStarBalance")
+  let body : Map[String, Json] = {}
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to approve a suggested post.
+/// Returns True on success.
+pub async fn Bot::approve_suggested_post(
+  self : Bot,
+  chat_id~ : Int64,
+  user_id~ : Int64,
+  inline_message_id? : String,
+  message_id? : Int,
+) -> Bool raise TelegramError {
+  let url = self.api_url("approveSuggestedPost")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "user_id": @json.to_json(user_id),
+  }
+  if inline_message_id is Some(v) {
+    body["inline_message_id"] = @json.to_json(v)
+  }
+  if message_id is Some(v) {
+    body["message_id"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to decline a suggested post.
+/// Returns True on success.
+pub async fn Bot::decline_suggested_post(
+  self : Bot,
+  chat_id~ : Int64,
+  user_id~ : Int64,
+  inline_message_id? : String,
+  message_id? : Int,
+) -> Bool raise TelegramError {
+  let url = self.api_url("declineSuggestedPost")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "user_id": @json.to_json(user_id),
+  }
+  if inline_message_id is Some(v) {
+    body["inline_message_id"] = @json.to_json(v)
+  }
+  if message_id is Some(v) {
+    body["message_id"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to repost stories across business accounts.
+/// On success, MessageId of the reposted story is returned.
+pub async fn Bot::repost_story(
+  self : Bot,
+  chat_id~ : ChatId,
+  from_chat_id~ : ChatId,
+  story_id~ : Int,
+  message_thread_id? : Int,
+  direct_messages_topic_id? : Int,
+  business_connection_id? : String,
+  text? : String,
+  parse_mode? : String,
+  entities? : Array[MessageEntity],
+) -> MessageId raise TelegramError {
+  let url = self.api_url("repostStory")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "from_chat_id": @json.to_json(from_chat_id),
+    "story_id": @json.to_json(story_id),
+  }
+  if message_thread_id is Some(v) {
+    body["message_thread_id"] = @json.to_json(v)
+  }
+  if direct_messages_topic_id is Some(v) {
+    body["direct_messages_topic_id"] = @json.to_json(v)
+  }
+  if business_connection_id is Some(v) {
+    body["business_connection_id"] = @json.to_json(v)
+  }
+  if text is Some(v) {
+    body["text"] = @json.to_json(v)
+  }
+  if parse_mode is Some(v) {
+    body["parse_mode"] = @json.to_json(v)
+  }
+  if entities is Some(v) {
+    body["entities"] = @json.ToJson::to_json(v)
   }
   let (response, data) = @http.post(url, @json.to_json(body), headers={
     "Content-Type": "application/json",
