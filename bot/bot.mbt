@@ -3752,8 +3752,11 @@ pub async fn Bot::get_chat_member(
 }
 
 ///|
+// Temporary combined methods file - will be merged into bot.mbt
+
+///|
 /// Use this method to send a checklist.
-/// On success, the sent Message is returned.
+/// On success, sent Message is returned.
 pub async fn Bot::send_checklist(
   self : Bot,
   business_connection_id? : String,
@@ -3786,7 +3789,7 @@ pub async fn Bot::send_checklist(
 
 ///|
 /// Use this method to edit a checklist attached to a message.
-/// On success, the edited Message is returned.
+/// On success, edited Message is returned.
 pub async fn Bot::edit_message_checklist(
   self : Bot,
   business_connection_id? : String,
@@ -3813,6 +3816,81 @@ pub async fn Bot::edit_message_checklist(
   if reply_to_message_id is Some(v) {
     body["reply_to_message_id"] = @json.to_json(v)
   }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to get list of gifts that can be sent by user.
+/// Returns Gifts on success.
+pub async fn Bot::get_user_gifts(
+  self : Bot,
+  offset? : Int,
+  limit? : Int,
+) -> Gifts raise TelegramError {
+  let url = self.api_url("getUserGifts")
+  let body : Map[String, Json] = {}
+  if offset is Some(v) {
+    body["offset"] = @json.to_json(v)
+  }
+  if limit is Some(v) {
+    body["limit"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to get list of gifts that were sent to user.
+/// Returns Gifts on success.
+pub async fn Bot::get_chat_gifts(
+  self : Bot,
+  chat_id~ : ChatId,
+  offset? : Int,
+  limit? : Int,
+) -> Gifts raise TelegramError {
+  let url = self.api_url("getChatGifts")
+  let body : Map[String, Json] = { "chat_id": @json.to_json(chat_id) }
+  if offset is Some(v) {
+    body["offset"] = @json.to_json(v)
+  }
+  if limit is Some(v) {
+    body["limit"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to get number of Telegram Stars that can be spent by bot.
+/// Returns StarBalance on success.
+pub async fn Bot::get_my_star_balance(self : Bot) -> StarBalance raise TelegramError {
+  let url = self.api_url("getMyStarBalance")
+  let body : Map[String, Json] = {}
   let (response, data) = @http.post(url, @json.to_json(body), headers={
     "Content-Type": "application/json",
   }) catch {
