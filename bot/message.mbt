@@ -74,6 +74,12 @@ pub struct Message {
   text : String?
   entities : Array[MessageEntity]?
   reply_to_message : Message?
+  message_thread_id : Int?
+  is_topic_message : Bool?
+  direct_messages_topic : DirectMessagesTopic?
+  gift_upgrade_sent : GiftInfo?
+  gift_id : String?
+  is_from_blockchain : Bool?
 } derive(Show, Eq)
 
 ///|
@@ -85,8 +91,14 @@ pub fn Message::new(
   text? : String,
   entities? : Array[MessageEntity],
   reply_to_message? : Message,
+  message_thread_id? : Int,
+  is_topic_message? : Bool,
+  direct_messages_topic? : DirectMessagesTopic,
+  gift_upgrade_sent? : GiftInfo,
+  gift_id? : String,
+  is_from_blockchain? : Bool,
 ) -> Message {
-  { message_id, from, date, chat, text, entities, reply_to_message }
+  { message_id, from, date, chat, text, entities, reply_to_message, message_thread_id, is_topic_message, direct_messages_topic, gift_upgrade_sent, gift_id, is_from_blockchain }
 }
 
 ///|
@@ -107,6 +119,24 @@ pub impl @json.ToJson for Message with to_json(self) {
   }
   if self.reply_to_message is Some(v) {
     object["reply_to_message"] = @json.to_json(v)
+  }
+  if self.message_thread_id is Some(v) {
+    object["message_thread_id"] = @json.to_json(v)
+  }
+  if self.is_topic_message is Some(v) {
+    object["is_topic_message"] = @json.to_json(v)
+  }
+  if self.direct_messages_topic is Some(v) {
+    object["direct_messages_topic"] = @json.to_json(v)
+  }
+  if self.gift_upgrade_sent is Some(v) {
+    object["gift_upgrade_sent"] = @json.to_json(v)
+  }
+  if self.gift_id is Some(v) {
+    object["gift_id"] = @json.to_json(v)
+  }
+  if self.is_from_blockchain is Some(v) {
+    object["is_from_blockchain"] = @json.to_json(v)
   }
   @json.to_json(object)
 }
@@ -139,5 +169,35 @@ pub impl @json.FromJson for Message with from_json(json, path) {
   } else {
     None
   }
-  { message_id, from, date, chat, text, entities, reply_to_message }
+  let message_thread_id : Int? = if object.get("message_thread_id") is Some(v) {
+    Some(@json.from_json(v, path~))
+  } else {
+    None
+  }
+  let is_topic_message : Bool? = if object.get("is_topic_message") is Some(v) {
+    Some(@json.from_json(v, path~))
+  } else {
+    None
+  }
+  let direct_messages_topic : DirectMessagesTopic? = if object.get("direct_messages_topic") is Some(v) {
+    Some(@json.from_json(v, path~))
+  } else {
+    None
+  }
+  let gift_upgrade_sent : GiftInfo? = if object.get("gift_upgrade_sent") is Some(v) {
+    Some(@json.from_json(v, path~))
+  } else {
+    None
+  }
+  let gift_id : String? = if object.get("gift_id") is Some(v) {
+    Some(@json.from_json(v, path~))
+  } else {
+    None
+  }
+  let is_from_blockchain : Bool? = if object.get("is_from_blockchain") is Some(v) {
+    Some(@json.from_json(v, path~))
+  } else {
+    None
+  }
+  { message_id, from, date, chat, text, entities, reply_to_message, message_thread_id, is_topic_message, direct_messages_topic, gift_upgrade_sent, gift_id, is_from_blockchain }
 }

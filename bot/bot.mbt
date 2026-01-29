@@ -3750,3 +3750,108 @@ pub async fn Bot::get_chat_member(
   }
   parse_api_response(data)
 }
+
+///|
+/// Use this method to send draft text messages.
+/// This method allows streaming partial messages.
+/// On success, the MessageId of the sent message is returned.
+pub async fn Bot::send_message_draft(
+  self : Bot,
+  chat_id~ : ChatId,
+  text~ : String,
+  message_thread_id? : Int,
+  direct_messages_topic_id? : Int,
+  business_connection_id? : String,
+  parse_mode? : String,
+  entities? : Array[MessageEntity],
+  link_preview_options? : LinkPreviewOptions,
+  disable_web_page_preview? : Bool,
+) -> MessageId raise TelegramError {
+  let url = self.api_url("sendMessageDraft")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "text": @json.to_json(text),
+  }
+  if message_thread_id is Some(v) {
+    body["message_thread_id"] = @json.to_json(v)
+  }
+  if direct_messages_topic_id is Some(v) {
+    body["direct_messages_topic_id"] = @json.to_json(v)
+  }
+  if business_connection_id is Some(v) {
+    body["business_connection_id"] = @json.to_json(v)
+  }
+  if parse_mode is Some(v) {
+    body["parse_mode"] = @json.to_json(v)
+  }
+  if entities is Some(v) {
+    body["entities"] = @json.ToJson::to_json(v)
+  }
+  if link_preview_options is Some(v) {
+    body["link_preview_options"] = @json.to_json(v)
+  }
+  if disable_web_page_preview is Some(v) {
+    body["disable_web_page_preview"] = @json.to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
+
+///|
+/// Use this method to repost stories across business accounts.
+/// On success, the MessageId of the reposted story is returned.
+pub async fn Bot::repost_story(
+  self : Bot,
+  chat_id~ : ChatId,
+  from_chat_id~ : ChatId,
+  story_id~ : Int,
+  message_thread_id? : Int,
+  direct_messages_topic_id? : Int,
+  business_connection_id? : String,
+  text? : String,
+  parse_mode? : String,
+  entities? : Array[MessageEntity],
+) -> MessageId raise TelegramError {
+  let url = self.api_url("repostStory")
+  let body : Map[String, Json] = {
+    "chat_id": @json.to_json(chat_id),
+    "from_chat_id": @json.to_json(from_chat_id),
+    "story_id": @json.to_json(story_id),
+  }
+  if message_thread_id is Some(v) {
+    body["message_thread_id"] = @json.to_json(v)
+  }
+  if direct_messages_topic_id is Some(v) {
+    body["direct_messages_topic_id"] = @json.to_json(v)
+  }
+  if business_connection_id is Some(v) {
+    body["business_connection_id"] = @json.to_json(v)
+  }
+  if text is Some(v) {
+    body["text"] = @json.to_json(v)
+  }
+  if parse_mode is Some(v) {
+    body["parse_mode"] = @json.to_json(v)
+  }
+  if entities is Some(v) {
+    body["entities"] = @json.ToJson::to_json(v)
+  }
+  let (response, data) = @http.post(url, @json.to_json(body), headers={
+    "Content-Type": "application/json",
+  }) catch {
+    err => raise TelegramError::HttpError(code=0, body="Request failed: \{err}")
+  }
+  guard response.code is (200..=299) else {
+    let body_text = data.text() catch { _ => "<failed to read body>" }
+    raise TelegramError::HttpError(code=response.code, body=body_text)
+  }
+  parse_api_response(data)
+}
