@@ -98,7 +98,21 @@ pub fn Message::new(
   gift_id? : String,
   is_from_blockchain? : Bool,
 ) -> Message {
-  { message_id, from, date, chat, text, entities, reply_to_message, message_thread_id, is_topic_message, direct_messages_topic, gift_upgrade_sent, gift_id, is_from_blockchain }
+  {
+    message_id,
+    from,
+    date,
+    chat,
+    text,
+    entities,
+    reply_to_message,
+    message_thread_id,
+    is_topic_message,
+    direct_messages_topic,
+    gift_upgrade_sent,
+    gift_id,
+    is_from_blockchain,
+  }
 }
 
 ///|
@@ -179,12 +193,16 @@ pub impl @json.FromJson for Message with from_json(json, path) {
   } else {
     None
   }
-  let direct_messages_topic : DirectMessagesTopic? = if object.get("direct_messages_topic") is Some(v) {
+  let direct_messages_topic : DirectMessagesTopic? = if object.get(
+      "direct_messages_topic",
+    )
+    is Some(v) {
     Some(@json.from_json(v, path~))
   } else {
     None
   }
-  let gift_upgrade_sent : GiftInfo? = if object.get("gift_upgrade_sent") is Some(v) {
+  let gift_upgrade_sent : GiftInfo? = if object.get("gift_upgrade_sent")
+    is Some(v) {
     Some(@json.from_json(v, path~))
   } else {
     None
@@ -194,10 +212,25 @@ pub impl @json.FromJson for Message with from_json(json, path) {
   } else {
     None
   }
-  let is_from_blockchain : Bool? = if object.get("is_from_blockchain") is Some(v) {
+  let is_from_blockchain : Bool? = if object.get("is_from_blockchain")
+    is Some(v) {
     Some(@json.from_json(v, path~))
   } else {
     None
   }
-  { message_id, from, date, chat, text, entities, reply_to_message, message_thread_id, is_topic_message, direct_messages_topic, gift_upgrade_sent, gift_id, is_from_blockchain }
+  {
+    message_id,
+    from,
+    date,
+    chat,
+    text,
+    entities,
+    reply_to_message,
+    message_thread_id,
+    is_topic_message,
+    direct_messages_topic,
+    gift_upgrade_sent,
+    gift_id,
+    is_from_blockchain,
+  }
 }

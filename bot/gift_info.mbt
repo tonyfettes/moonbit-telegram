@@ -5,18 +5,13 @@ pub struct GiftInfo {
 } derive(Show, Eq)
 
 ///|
-pub fn GiftInfo::new(
-  gift~ : Gift,
-  from? : User,
-) -> GiftInfo {
+pub fn GiftInfo::new(gift~ : Gift, from? : User) -> GiftInfo {
   { gift, from }
 }
 
 ///|
 pub impl @json.ToJson for GiftInfo with to_json(self) {
-  let object : Map[String, Json] = {
-    "gift": @json.to_json(self.gift),
-  }
+  let object : Map[String, Json] = { "gift": @json.to_json(self.gift) }
   if self.from is Some(v) {
     object["from"] = @json.to_json(v)
   }

@@ -461,8 +461,7 @@ pub impl @json.FromJson for UniqueGiftInfo with from_json(json, path) {
   } else {
     None
   }
-  let last_resale_amount : Int? = if object.get("last_resale_amount")
-    is Some(v) {
+  let last_resale_amount : Int? = if object.get("last_resale_amount") is Some(v) {
     Some(@json.from_json(v, path~))
   } else {
     None
@@ -499,9 +498,7 @@ pub fn StarBalance::new(balance~ : Int) -> StarBalance {
 
 ///|
 pub impl @json.ToJson for StarBalance with to_json(self) {
-  let object : Map[String, Json] = {
-    "balance": @json.to_json(self.balance),
-  }
+  let object : Map[String, Json] = { "balance": @json.to_json(self.balance) }
   @json.to_json(object)
 }
 
@@ -513,4 +510,3 @@ pub impl @json.FromJson for StarBalance with from_json(json, path) {
   let balance : Int = @json.from_json(object["balance"], path~)
   { balance, }
 }
-

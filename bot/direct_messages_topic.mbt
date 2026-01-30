@@ -27,7 +27,10 @@ pub impl @json.ToJson for DirectMessagesTopic with to_json(self) {
 ///|
 pub impl @json.FromJson for DirectMessagesTopic with from_json(json, path) {
   guard json is Object(object) else {
-    raise @json.JsonDecodeError(path~, "Expected object for DirectMessagesTopic")
+    raise @json.JsonDecodeError(
+      path~,
+      "Expected object for DirectMessagesTopic",
+    )
   }
   let id : Int = @json.from_json(object["id"], path~)
   let name : String = @json.from_json(object["name"], path~)

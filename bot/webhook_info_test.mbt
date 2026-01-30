@@ -38,10 +38,7 @@ test "WebhookInfo JSON round-trip with error fields" {
   inspect(parsed.pending_update_count, content="5")
   inspect(parsed.last_error_date, content="Some(1640995200)")
   inspect(parsed.last_error_message, content="Some(\"Connection timeout\")")
-  inspect(
-    parsed.last_synchronization_error_date,
-    content="Some(1641081600)",
-  )
+  inspect(parsed.last_synchronization_error_date, content="Some(1641081600)")
 }
 
 ///|

@@ -88,23 +88,27 @@ pub impl @json.FromJson for WebhookInfo with from_json(json, path) {
   } else {
     None
   }
-  let last_error_message : String? = if object.get("last_error_message") is Some(v) {
+  let last_error_message : String? = if object.get("last_error_message")
+    is Some(v) {
     Some(@json.from_json(v, path~))
   } else {
     None
   }
-  let last_synchronization_error_date : Int? =
-    if object.get("last_synchronization_error_date") is Some(v) {
-      Some(@json.from_json(v, path~))
-    } else {
-      None
-    }
+  let last_synchronization_error_date : Int? = if object.get(
+      "last_synchronization_error_date",
+    )
+    is Some(v) {
+    Some(@json.from_json(v, path~))
+  } else {
+    None
+  }
   let max_connections : Int? = if object.get("max_connections") is Some(v) {
     Some(@json.from_json(v, path~))
   } else {
     None
   }
-  let allowed_updates : Array[String]? = if object.get("allowed_updates") is Some(v) {
+  let allowed_updates : Array[String]? = if object.get("allowed_updates")
+    is Some(v) {
     Some(@json.from_json(v, path~))
   } else {
     None

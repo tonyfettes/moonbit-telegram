@@ -3056,7 +3056,9 @@ pub async fn Bot::delete_webhook(
 ///|
 /// Use this method to get current webhook status.
 /// On success, returns a WebhookInfo object.
-pub async fn Bot::get_webhook_info(self : Bot) -> WebhookInfo raise TelegramError {
+pub async fn Bot::get_webhook_info(
+  self : Bot,
+) -> WebhookInfo raise TelegramError {
   let url = self.api_url("getWebhookInfo")
   let (response, data) = @http.get(url, headers={
     "Content-Type": "application/json",
@@ -3939,7 +3941,9 @@ pub async fn Bot::get_chat_gifts(
 ///|
 /// Use this method to get number of Telegram Stars that can be spent by bot.
 /// Returns StarBalance on success.
-pub async fn Bot::get_my_star_balance(self : Bot) -> StarBalance raise TelegramError {
+pub async fn Bot::get_my_star_balance(
+  self : Bot,
+) -> StarBalance raise TelegramError {
   let url = self.api_url("getMyStarBalance")
   let body : Map[String, Json] = {}
   let (response, data) = @http.post(url, @json.to_json(body), headers={

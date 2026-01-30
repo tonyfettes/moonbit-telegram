@@ -75,7 +75,7 @@ pub struct InputChecklistTask {
 
 ///|
 pub fn InputChecklistTask::new(text~ : String) -> InputChecklistTask {
-  { text }
+  { text, }
 }
 
 ///|
@@ -90,7 +90,7 @@ pub impl @json.FromJson for InputChecklistTask with from_json(json, path) {
     raise @json.JsonDecodeError(path~, "Expected object for InputChecklistTask")
   }
   let text : String = @json.from_json(object["text"], path~)
-  { text }
+  { text, }
 }
 
 ///|

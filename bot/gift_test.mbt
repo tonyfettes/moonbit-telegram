@@ -183,7 +183,7 @@ test "Gift with all new fields JSON round-trip" {
   let chat = Chat::new(
     id=123456789,
     type_=ChatType::Channel,
-    title~="Test Channel",
+    title="Test Channel",
   )
   let colors = UniqueGiftColors::new(
     background_icon_color=123456,
@@ -193,7 +193,11 @@ test "Gift with all new fields JSON round-trip" {
     button_color=567890,
     button_text_color=678901,
   )
-  let bg = GiftBackground::new(type_="gradient", gradient_top_color=100, gradient_bottom_color=200)
+  let bg = GiftBackground::new(
+    type_="gradient",
+    gradient_top_color=100,
+    gradient_bottom_color=200,
+  )
   let gift = Gift::new(
     id="gift_full",
     sticker~,
@@ -201,7 +205,7 @@ test "Gift with all new fields JSON round-trip" {
     total_count=500,
     remaining_count=250,
     publisher_chat=chat,
-    colors=colors,
+    colors~,
     background=bg,
     unique_gift_variant_count=5,
     unique_gift_number=3,

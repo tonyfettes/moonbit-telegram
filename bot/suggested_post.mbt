@@ -33,7 +33,10 @@ pub impl @json.ToJson for SuggestedPostParameters with to_json(self) {
 ///|
 pub impl @json.FromJson for SuggestedPostParameters with from_json(json, path) {
   guard json is Object(object) else {
-    raise @json.JsonDecodeError(path~, "Expected object for SuggestedPostParameters")
+    raise @json.JsonDecodeError(
+      path~,
+      "Expected object for SuggestedPostParameters",
+    )
   }
   let text : String? = if object.get("text") is Some(v) {
     Some(@json.from_json(v, path~))
@@ -41,8 +44,9 @@ pub impl @json.FromJson for SuggestedPostParameters with from_json(json, path) {
     None
   }
   let link_preview_options : LinkPreviewOptions? = if object.get(
-    "link_preview_options",
-  ) is Some(v) {
+      "link_preview_options",
+    )
+    is Some(v) {
     Some(@json.from_json(v, path~))
   } else {
     None
@@ -93,8 +97,9 @@ pub impl @json.FromJson for SuggestedPostInfo with from_json(json, path) {
     raise @json.JsonDecodeError(path~, "Expected object for SuggestedPostInfo")
   }
   let suggested_post_parameters : SuggestedPostParameters? = if object.get(
-    "suggested_post_parameters",
-  ) is Some(v) {
+      "suggested_post_parameters",
+    )
+    is Some(v) {
     Some(@json.from_json(v, path~))
   } else {
     None
@@ -118,7 +123,9 @@ pub fn SuggestedPostPrice::new(star_count~ : Int) -> SuggestedPostPrice {
 
 ///|
 pub impl @json.ToJson for SuggestedPostPrice with to_json(self) {
-  let object : Map[String, Json] = { "star_count": @json.to_json(self.star_count) }
+  let object : Map[String, Json] = {
+    "star_count": @json.to_json(self.star_count),
+  }
   @json.to_json(object)
 }
 
@@ -158,7 +165,10 @@ pub impl @json.ToJson for SuggestedPostApproved with to_json(self) {
 ///|
 pub impl @json.FromJson for SuggestedPostApproved with from_json(json, path) {
   guard json is Object(object) else {
-    raise @json.JsonDecodeError(path~, "Expected object for SuggestedPostApproved")
+    raise @json.JsonDecodeError(
+      path~,
+      "Expected object for SuggestedPostApproved",
+    )
   }
   let user : User = @json.from_json(object["user"], path~)
   let suggested_post_info : SuggestedPostInfo = @json.from_json(
@@ -195,7 +205,10 @@ pub impl @json.ToJson for SuggestedPostDeclined with to_json(self) {
 ///|
 pub impl @json.FromJson for SuggestedPostDeclined with from_json(json, path) {
   guard json is Object(object) else {
-    raise @json.JsonDecodeError(path~, "Expected object for SuggestedPostDeclined")
+    raise @json.JsonDecodeError(
+      path~,
+      "Expected object for SuggestedPostDeclined",
+    )
   }
   let user : User = @json.from_json(object["user"], path~)
   let suggested_post_info : SuggestedPostInfo = @json.from_json(
@@ -267,7 +280,10 @@ pub impl @json.ToJson for SuggestedPostApprovalFailed with to_json(self) {
 }
 
 ///|
-pub impl @json.FromJson for SuggestedPostApprovalFailed with from_json(json, path) {
+pub impl @json.FromJson for SuggestedPostApprovalFailed with from_json(
+  json,
+  path,
+) {
   guard json is Object(object) else {
     raise @json.JsonDecodeError(
       path~,
