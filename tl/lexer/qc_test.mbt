@@ -1,3 +1,10 @@
+// Helper generator using Arbitrary trait
+fn gen_schema() -> @qc.Gen[@ast.Schema] {
+  @qc.Gen::new(fn(size, rs) {
+    @quickcheck.Arbitrary::arbitrary(size, rs)
+  })
+}
+
 ///|
 /// Property: Token spans are contiguous (no overlap, no gaps in valid tokens).
 /// For any valid TL source from a schema, consecutive tokens either:
@@ -5,7 +12,7 @@
 /// - Are separated by whitespace (prev.end.offset < curr.start.offset)
 test "lexer: token spans are contiguous" {
   @qc.quick_check(
-    @qc.forall(@internal_qc.gen_schema(), fn(schema) {
+    @qc.forall(gen_schema(), fn(schema) {
       let source = @tl.schema_to_string(schema)
       let tokens : Result[Array[Token], _] = try? Lexer::new(source~).tokenize()
       guard tokens is Ok(tokens) else { return true } // Skip invalid sources
@@ -30,7 +37,7 @@ test "lexer: token spans are contiguous" {
 /// For any valid TL source, no two tokens should have overlapping spans.
 test "lexer: token spans don't overlap" {
   @qc.quick_check(
-    @qc.forall(@internal_qc.gen_schema(), fn(schema) {
+    @qc.forall(gen_schema(), fn(schema) {
       let source = @tl.schema_to_string(schema)
       let tokens : Result[Array[Token], _] = try? Lexer::new(source~).tokenize()
       guard tokens is Ok(tokens) else { return true } // Skip invalid sources
@@ -77,7 +84,7 @@ test "lexer: hex numbers parse correctly" {
 /// Property: Token span offsets are non-negative and within source bounds.
 test "lexer: token spans are within source bounds" {
   @qc.quick_check(
-    @qc.forall(@internal_qc.gen_schema(), fn(schema) {
+    @qc.forall(gen_schema(), fn(schema) {
       let source = @tl.schema_to_string(schema)
       let source_len = source.length()
       let tokens : Result[Array[Token], _] = try? Lexer::new(source~).tokenize()
@@ -102,7 +109,7 @@ test "lexer: token spans are within source bounds" {
 /// Property: Last token is always Eof.
 test "lexer: last token is always Eof" {
   @qc.quick_check(
-    @qc.forall(@internal_qc.gen_schema(), fn(schema) {
+    @qc.forall(gen_schema(), fn(schema) {
       let source = @tl.schema_to_string(schema)
       let tokens : Result[Array[Token], _] = try? Lexer::new(source~).tokenize()
       guard tokens is Ok(tokens) && tokens.length() > 0 else { return true }

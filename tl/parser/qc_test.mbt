@@ -1,3 +1,10 @@
+// Helper generator using Arbitrary trait
+fn gen_schema() -> @qc.Gen[@ast.Schema] {
+  @qc.Gen::new(fn(size, rs) {
+    @quickcheck.Arbitrary::arbitrary(size, rs)
+  })
+}
+
 ///|
 /// Property: parse(schema_to_string(schema)) == schema (ignoring spans)
 ///
@@ -9,7 +16,7 @@
 /// could be addressed by normalizing the AST or refactoring it.
 test "parse/print round-trip preserves schema structure" {
   @qc.quick_check(
-    @qc.forall_shrink(@internal_qc.gen_schema(), @qc.Shrink::shrink, fn(
+    @qc.forall_shrink(gen_schema(), @qc.Shrink::shrink, fn(
       schema,
     ) {
       let printed = @tl.schema_to_string(schema)
@@ -29,7 +36,7 @@ test "parse/print round-trip preserves schema structure" {
 /// If we print a schema, reparse it, and print again, we should get the same string.
 test "parse/print is idempotent" {
   @qc.quick_check(
-    @qc.forall_shrink(@internal_qc.gen_schema(), @qc.Shrink::shrink, fn(
+    @qc.forall_shrink(gen_schema(), @qc.Shrink::shrink, fn(
       schema,
     ) {
       let printed1 = @tl.schema_to_string(schema)

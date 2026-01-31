@@ -1,10 +1,37 @@
+// Helper generators using Arbitrary trait
+
+fn gen_lower_ident() -> @qc.Gen[@ast.LowerIdent] {
+  @qc.Gen::new(fn(size, rs) {
+    @quickcheck.Arbitrary::arbitrary(size, rs)
+  })
+}
+
+fn gen_upper_ident() -> @qc.Gen[@ast.UpperIdent] {
+  @qc.Gen::new(fn(size, rs) {
+    @quickcheck.Arbitrary::arbitrary(size, rs)
+  })
+}
+
+fn gen_combinator() -> @qc.Gen[@ast.Combinator] {
+  @qc.Gen::new(fn(size, rs) {
+    @quickcheck.Arbitrary::arbitrary(size, rs)
+  })
+}
+
+fn dummy_span() -> @ast.Span {
+  @ast.Span::new(
+    start=@ast.Position::new(line=0, column=0, offset=0),
+    end=@ast.Position::new(line=0, column=0, offset=0),
+  )
+}
+
 ///|
 /// Generates a schema that references an undefined type.
 /// The undefined type is used in an argument, not the result type
 /// (since result types are defined by the combinator itself).
 fn gen_schema_with_undefined_type() -> @qc.Gen[@ast.Schema] {
   // Generate a combinator that uses an undefined type in an argument
-  let undefined_type_gen = @internal_qc.gen_upper_ident().fmap(fn(name) {
+  let undefined_type_gen = gen_upper_ident().fmap(fn(name) {
     // Use an unlikely namespace prefix to ensure it's undefined
     @ast.TypeIdent::namespaced(
       @ast.LowerIdent::new(value="__undefined__"),
@@ -31,7 +58,7 @@ fn gen_schema_with_undefined_type() -> @qc.Gen[@ast.Schema] {
         opt_args: [],
         args: [arg],
         result,
-        span: @internal_qc.dummy_span(),
+        span: dummy_span(),
       }
       {
         types: [@ast.Declaration::Combinator(combinator)],
@@ -40,8 +67,8 @@ fn gen_schema_with_undefined_type() -> @qc.Gen[@ast.Schema] {
       }
     },
     undefined_type_gen,
-    @internal_qc.gen_lower_ident(),
-    @internal_qc.gen_upper_ident(),
+    gen_lower_ident(),
+    gen_upper_ident(),
   )
 }
 
@@ -61,7 +88,7 @@ fn gen_schema_with_duplicate_name() -> @qc.Gen[@ast.Schema] {
         opt_args: [],
         args: [],
         result,
-        span: @internal_qc.dummy_span(),
+        span: dummy_span(),
       }
       let combinator2 : @ast.Combinator = {
         ns: None,
@@ -70,7 +97,7 @@ fn gen_schema_with_duplicate_name() -> @qc.Gen[@ast.Schema] {
         opt_args: [],
         args: [],
         result,
-        span: @internal_qc.dummy_span(),
+        span: dummy_span(),
       }
       {
         types: [
@@ -81,8 +108,8 @@ fn gen_schema_with_duplicate_name() -> @qc.Gen[@ast.Schema] {
         comments: [],
       }
     },
-    @internal_qc.gen_lower_ident(),
-    @internal_qc.gen_upper_ident(),
+    gen_lower_ident(),
+    gen_upper_ident(),
   )
 }
 
@@ -103,13 +130,13 @@ fn gen_schema_with_final_violation() -> @qc.Gen[@ast.Schema] {
         opt_args: [],
         args: [],
         result,
-        span: @internal_qc.dummy_span(),
+        span: dummy_span(),
       }
 
       // Final declaration
       let final_decl : @ast.FinalDecl = @ast.FinalDecl::Final({
         type_ident,
-        span: @internal_qc.dummy_span(),
+        span: dummy_span(),
       })
 
       // Second combinator - violates Final!
@@ -120,7 +147,7 @@ fn gen_schema_with_final_violation() -> @qc.Gen[@ast.Schema] {
         opt_args: [],
         args: [],
         result,
-        span: @internal_qc.dummy_span(),
+        span: dummy_span(),
       }
       {
         types: [
@@ -132,10 +159,10 @@ fn gen_schema_with_final_violation() -> @qc.Gen[@ast.Schema] {
         comments: [],
       }
     },
-    @internal_qc.gen_upper_ident(),
-    @internal_qc.gen_lower_ident(),
+    gen_upper_ident(),
+    gen_lower_ident(),
     // Ensure second constructor has a different name
-    @internal_qc.gen_lower_ident().fmap(fn(name) {
+    gen_lower_ident().fmap(fn(name) {
       @ast.LowerIdent::new(value=name.value + "_2")
     }),
   )
@@ -153,7 +180,7 @@ fn gen_schema_with_empty_violation() -> @qc.Gen[@ast.Schema] {
       // Empty declaration first
       let empty_decl : @ast.FinalDecl = @ast.FinalDecl::Empty({
         type_ident,
-        span: @internal_qc.dummy_span(),
+        span: dummy_span(),
       })
 
       // Combinator that violates Empty
@@ -164,7 +191,7 @@ fn gen_schema_with_empty_violation() -> @qc.Gen[@ast.Schema] {
         opt_args: [],
         args: [],
         result,
-        span: @internal_qc.dummy_span(),
+        span: dummy_span(),
       }
       {
         types: [
@@ -175,8 +202,8 @@ fn gen_schema_with_empty_violation() -> @qc.Gen[@ast.Schema] {
         comments: [],
       }
     },
-    @internal_qc.gen_upper_ident(),
-    @internal_qc.gen_lower_ident(),
+    gen_upper_ident(),
+    gen_lower_ident(),
   )
 }
 
@@ -197,13 +224,13 @@ fn gen_schema_with_new_violation() -> @qc.Gen[@ast.Schema] {
         opt_args: [],
         args: [],
         result,
-        span: @internal_qc.dummy_span(),
+        span: dummy_span(),
       }
 
       // New declaration - but constructors already exist!
       let new_decl : @ast.FinalDecl = @ast.FinalDecl::New({
         type_ident,
-        span: @internal_qc.dummy_span(),
+        span: dummy_span(),
       })
       {
         types: [
@@ -214,8 +241,8 @@ fn gen_schema_with_new_violation() -> @qc.Gen[@ast.Schema] {
         comments: [],
       }
     },
-    @internal_qc.gen_upper_ident(),
-    @internal_qc.gen_lower_ident(),
+    gen_upper_ident(),
+    gen_lower_ident(),
   )
 }
 
@@ -289,7 +316,7 @@ test "New type violation detected" {
 /// Computing CRC32 of the same normalized combinator should always yield the same result.
 test "CRC32 is deterministic" {
   @qc.quick_check(
-    @qc.forall(@internal_qc.gen_combinator(), fn(combinator) {
+    @qc.forall(gen_combinator(), fn(combinator) {
       let norm1 = normalize_combinator(combinator)
       let norm2 = normalize_combinator(combinator)
       let crc1 = crc32(norm1)
@@ -306,9 +333,9 @@ test "CRC32 is deterministic" {
 /// Two combinators that differ only in their span should have the same CRC32.
 test "CRC32 ignores spans" {
   @qc.quick_check(
-    @qc.forall(@internal_qc.gen_combinator(), fn(combinator) {
+    @qc.forall(gen_combinator(), fn(combinator) {
       // Create same combinator with different spans
-      let c1 = { ..combinator, span: @internal_qc.dummy_span() }
+      let c1 = { ..combinator, span: dummy_span() }
       let c2 = {
         ..combinator,
         span: @ast.Span::new(
