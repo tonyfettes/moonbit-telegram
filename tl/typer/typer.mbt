@@ -387,7 +387,11 @@ fn term_has_nat_hint(term : @ast.Term, nat_vars : Map[String, Unit]) -> Bool {
       nat_vars.contains(name.value) || name.value == "O" || name.value == "S"
     @ast.Term::Ident(ident) =>
       ident.ns is None &&
-      (ident.name.value == "O" || ident.name.value == "S" || nat_vars.contains(ident.name.value))
+      (
+        ident.name.value == "O" ||
+        ident.name.value == "S" ||
+        nat_vars.contains(ident.name.value)
+      )
     @ast.Term::Apply(ident, _) =>
       ident.ns is None && (ident.name.value == "O" || ident.name.value == "S")
     @ast.Term::Paren(expr) => expr_has_nat_hint(expr, nat_vars)
@@ -541,7 +545,8 @@ fn resolve_term_type(
         type_var_used[name.value] = true
       } else if nat_vars.contains(name.value) {
         nat_var_used[name.value] = true
-      } else if table.builtins.contains(name.value) || table.types.contains(name.value) {
+      } else if table.builtins.contains(name.value) ||
+        table.types.contains(name.value) {
         ()
       } else if is_upper_name(name.value) {
         raise UndefinedType(pos=span, name=name.value)
@@ -574,14 +579,16 @@ fn resolve_term_nat(
         raise UnboundNatVariable(pos=span, variable=name.value)
       }
     @ast.Term::Ident(ident) =>
-      if ident.ns is None && (ident.name.value == "O" || ident.name.value == "S") {
+      if ident.ns is None &&
+        (ident.name.value == "O" || ident.name.value == "S") {
         ()
       } else {
         let name = type_ident_full_name(ident)
         raise UndefinedType(pos=span, name~)
       }
     @ast.Term::Apply(ident, params) =>
-      if ident.ns is None && (ident.name.value == "O" || ident.name.value == "S") {
+      if ident.ns is None &&
+        (ident.name.value == "O" || ident.name.value == "S") {
         for param in params {
           resolve_expr_nat(table, param, span, nat_vars, nat_var_used)
         }

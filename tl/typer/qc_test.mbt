@@ -6,7 +6,10 @@ fn gen_schema_with_undefined_type() -> @qc.Gen[@ast.Schema] {
   // Generate a combinator that uses an undefined type in an argument
   let undefined_type_gen = @internal_qc.gen_upper_ident().fmap(fn(name) {
     // Use an unlikely namespace prefix to ensure it's undefined
-    @ast.TypeIdent::namespaced(@ast.LowerIdent::new(value="__undefined__"), name)
+    @ast.TypeIdent::namespaced(
+      @ast.LowerIdent::new(value="__undefined__"),
+      name,
+    )
   })
   @qc.liftA3(
     fn(undefined_ident, combinator_name, result_type_name) {
@@ -132,7 +135,9 @@ fn gen_schema_with_final_violation() -> @qc.Gen[@ast.Schema] {
     @internal_qc.gen_upper_ident(),
     @internal_qc.gen_lower_ident(),
     // Ensure second constructor has a different name
-    @internal_qc.gen_lower_ident().fmap(fn(name) { @ast.LowerIdent::new(value=(name.value + "_2")) }),
+    @internal_qc.gen_lower_ident().fmap(fn(name) {
+      @ast.LowerIdent::new(value=name.value + "_2")
+    }),
   )
 }
 

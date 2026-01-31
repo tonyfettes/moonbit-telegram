@@ -1,6 +1,9 @@
 ///|
 test "Conditional creation" {
-  let cond = Conditional::{ var_name: LowerIdent::new(value="flags"), bit_index: Some(0) }
+  let cond = Conditional::{
+    var_name: LowerIdent::new(value="flags"),
+    bit_index: Some(0),
+  }
   inspect(cond.var_name.value, content="flags")
   inspect(cond.bit_index, content="Some(0)")
 }
@@ -11,7 +14,10 @@ test "NamedArg creation" {
     name: LowerIdent::new(value="id"),
     conditional: None,
     bang: false,
-    type_: Term::Ident(TypeIdent::{ ns: None, name: UpperIdent::new(value="long") }),
+    type_: Term::Ident(TypeIdent::{
+      ns: None,
+      name: UpperIdent::new(value="long"),
+    }),
   }
   inspect(arg.name.value, content="id")
   assert_false(arg.bang)
@@ -21,9 +27,15 @@ test "NamedArg creation" {
 test "NamedArg with conditional" {
   let arg = NamedArg::{
     name: LowerIdent::new(value="first_name"),
-    conditional: Some(Conditional::{ var_name: LowerIdent::new(value="flags"), bit_index: Some(0) }),
+    conditional: Some(Conditional::{
+      var_name: LowerIdent::new(value="flags"),
+      bit_index: Some(0),
+    }),
     bang: false,
-    type_: Term::Ident(TypeIdent::{ ns: None, name: UpperIdent::new(value="string") }),
+    type_: Term::Ident(TypeIdent::{
+      ns: None,
+      name: UpperIdent::new(value="string"),
+    }),
   }
   guard arg.conditional is Some(cond) else { fail("expected conditional") }
   inspect(cond.bit_index, content="Some(0)")
@@ -35,7 +47,9 @@ test "OptionalArg creation" {
     names: [LowerIdent::new(value="t")],
     bang: false,
     type_: Expr::new(items=[
-      Subexpr::Term(Term::Ident(TypeIdent::{ ns: None, name: UpperIdent::new(value="Type") })),
+      Subexpr::Term(
+        Term::Ident(TypeIdent::{ ns: None, name: UpperIdent::new(value="Type") }),
+      ),
     ]),
   }
   inspect(arg.names.length(), content="1")
@@ -49,7 +63,10 @@ test "MultiplicityArg creation" {
     args: [
       Arg::Anonymous({
         bang: false,
-        type_: Term::Ident(TypeIdent::{ ns: None, name: UpperIdent::new(value="int") }),
+        type_: Term::Ident(TypeIdent::{
+          ns: None,
+          name: UpperIdent::new(value="int"),
+        }),
       }),
     ],
   }
@@ -94,11 +111,17 @@ test "FinalDecl variants" {
     end=Position::new(line=1, column=1, offset=0),
   )
   let new_decl = FinalDecl::New(FinalDeclData::{
-    type_ident: TypeIdent::{ ns: None, name: UpperIdent::new(value="UserStatus") },
+    type_ident: TypeIdent::{
+      ns: None,
+      name: UpperIdent::new(value="UserStatus"),
+    },
     span: dummy_span,
   })
   let final_decl = FinalDecl::Final(FinalDeclData::{
-    type_ident: TypeIdent::{ ns: None, name: UpperIdent::new(value="UserStatus") },
+    type_ident: TypeIdent::{
+      ns: None,
+      name: UpperIdent::new(value="UserStatus"),
+    },
     span: dummy_span,
   })
   let empty_decl = FinalDecl::Empty(FinalDeclData::{

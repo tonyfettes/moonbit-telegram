@@ -7,7 +7,10 @@ test "TypeIdent simple" {
 
 ///|
 test "TypeIdent namespaced" {
-  let ident = TypeIdent::namespaced(LowerIdent::new(value="auth"), UpperIdent::new(value="SentCode"))
+  let ident = TypeIdent::namespaced(
+    LowerIdent::new(value="auth"),
+    UpperIdent::new(value="SentCode"),
+  )
   inspect(ident.name.value, content="SentCode")
   inspect(ident.ns.map(fn(x) { x.value }), content="Some(\"auth\")")
 }
@@ -22,7 +25,9 @@ test "Term Ident" {
 ///|
 test "Term Apply" {
   let vector = TypeIdent::simple(UpperIdent::new(value="Vector"))
-  let arg = Expr::new(items=[Subexpr::Term(Term::Var(LowerIdent::new(value="t")))])
+  let arg = Expr::new(items=[
+    Subexpr::Term(Term::Var(LowerIdent::new(value="t"))),
+  ])
   let term = Term::Apply(vector, [arg])
   guard term is Apply(ident, params) else { fail("expected Apply") }
   inspect(ident.name.value, content="Vector")
@@ -31,7 +36,10 @@ test "Term Apply" {
 
 ///|
 test "Subexpr add" {
-  let sub = Subexpr::AddRight(Subexpr::Term(Term::Var(LowerIdent::new(value="n"))), 1)
+  let sub = Subexpr::AddRight(
+    Subexpr::Term(Term::Var(LowerIdent::new(value="n"))),
+    1,
+  )
   guard sub is AddRight(_, 1) else { fail("expected AddRight") }
 }
 

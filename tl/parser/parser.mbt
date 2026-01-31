@@ -208,11 +208,17 @@ fn Parser::parse_combinator_name(
         match self.peek() {
           LowerIdent(n) => {
             let _ = self.advance()
-            (Some(@ast.LowerIdent::new(value=name)), @ast.LowerIdent::new(value=n))
+            (
+              Some(@ast.LowerIdent::new(value=name)),
+              @ast.LowerIdent::new(value=n),
+            )
           }
           Underscore => {
             let _ = self.advance()
-            (Some(@ast.LowerIdent::new(value=name)), @ast.LowerIdent::new(value="_"))
+            (
+              Some(@ast.LowerIdent::new(value=name)),
+              @ast.LowerIdent::new(value="_"),
+            )
           }
           _ => {
             let token = self.current()
@@ -436,7 +442,10 @@ fn Parser::parse_named_arg(self : Parser) -> @ast.Arg raise ParseError {
       Number(bit_idx) => {
         let _ = self.advance()
         let _ = self.expect(Question)
-        Some({ var_name: @ast.LowerIdent::new(value=name), bit_index: Some(bit_idx) })
+        Some({
+          var_name: @ast.LowerIdent::new(value=name),
+          bit_index: Some(bit_idx),
+        })
       }
       _ => {
         let token = self.current()
@@ -479,7 +488,12 @@ fn Parser::parse_named_arg(self : Parser) -> @ast.Arg raise ParseError {
       false
     }
     let type_ = self.parse_term()
-    @ast.Arg::Named({ name: @ast.LowerIdent::new(value=actual_name), conditional: Some(cond), bang, type_ })
+    @ast.Arg::Named({
+      name: @ast.LowerIdent::new(value=actual_name),
+      conditional: Some(cond),
+      bang,
+      type_,
+    })
   } else {
     // name is the field name, check for :
     let _ = self.expect(Colon)
@@ -494,7 +508,10 @@ fn Parser::parse_named_arg(self : Parser) -> @ast.Arg raise ParseError {
             let _ = self.advance()
             if self.peek() is Question {
               let _ = self.advance()
-              Some({ var_name: @ast.LowerIdent::new(value=var_name), bit_index: Some(bit_idx) })
+              Some({
+                var_name: @ast.LowerIdent::new(value=var_name),
+                bit_index: Some(bit_idx),
+              })
             } else {
               // Not a conditional, restore
               self.pos = saved
@@ -525,7 +542,12 @@ fn Parser::parse_named_arg(self : Parser) -> @ast.Arg raise ParseError {
       false
     }
     let type_ = self.parse_term()
-    @ast.Arg::Named({ name: @ast.LowerIdent::new(value=name), conditional: cond2, bang, type_ })
+    @ast.Arg::Named({
+      name: @ast.LowerIdent::new(value=name),
+      conditional: cond2,
+      bang,
+      type_,
+    })
   }
 }
 
@@ -618,7 +640,10 @@ fn Parser::parse_term(self : Parser) -> @ast.Term raise ParseError {
       if self.peek() is Dot {
         let _ = self.advance()
         let type_name = self.parse_ident_name()
-        let ident = @ast.TypeIdent::new(name=@ast.UpperIdent::new(value=type_name), ns=@ast.LowerIdent::new(value=name))
+        let ident = @ast.TypeIdent::new(
+          name=@ast.UpperIdent::new(value=type_name),
+          ns=@ast.LowerIdent::new(value=name),
+        )
         self.parse_term_apply(ident)
       } else if self.peek() is LAngle {
         let ident = @ast.TypeIdent::simple(@ast.UpperIdent::new(value=name))
@@ -632,13 +657,18 @@ fn Parser::parse_term(self : Parser) -> @ast.Term raise ParseError {
       if self.peek() is Dot {
         let _ = self.advance()
         let type_name = self.parse_ident_name()
-        let ident = @ast.TypeIdent::new(name=@ast.UpperIdent::new(value=type_name), ns=@ast.LowerIdent::new(value=name))
+        let ident = @ast.TypeIdent::new(
+          name=@ast.UpperIdent::new(value=type_name),
+          ns=@ast.LowerIdent::new(value=name),
+        )
         self.parse_term_apply(ident)
       } else if self.peek() is LAngle {
         let ident = @ast.TypeIdent::simple(@ast.UpperIdent::new(value=name))
         self.parse_term_apply(ident)
       } else {
-        @ast.Term::Ident(@ast.TypeIdent::simple(@ast.UpperIdent::new(value=name)))
+        @ast.Term::Ident(
+          @ast.TypeIdent::simple(@ast.UpperIdent::new(value=name)),
+        )
       }
     }
     _ => {

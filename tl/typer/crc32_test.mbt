@@ -32,7 +32,10 @@ test "normalize_combinator: simple" {
         type_: @ast.Term::Var(@ast.LowerIdent::new(value="int")),
       }),
     ],
-    result: { type_ident: { ns: None, name: @ast.UpperIdent::new(value="Foo") }, params: [] },
+    result: {
+      type_ident: { ns: None, name: @ast.UpperIdent::new(value="Foo") },
+      params: [],
+    },
     span,
   }
   // Should not include #id in normalized form

@@ -130,7 +130,10 @@ test "Parser namespaced combinator" {
   guard c.ns is Some(ns) else { fail("expected namespace") }
   inspect(ns.value, content="auth")
   inspect(c.name.value, content="sentCode")
-  inspect(c.result.type_ident.ns.map(fn(x) { x.value }), content="Some(\"auth\")")
+  inspect(
+    c.result.type_ident.ns.map(fn(x) { x.value }),
+    content="Some(\"auth\")",
+  )
   inspect(c.result.type_ident.name.value, content="SentCode")
 }
 
@@ -170,7 +173,8 @@ test "Parser anonymous multiplicity" {
   guard schema.types[0] is Combinator(c) else { fail("expected Combinator") }
   // Should have # as first arg and [t] as second arg
   inspect(c.args.length(), content="2")
-  guard c.args[0] is Anonymous({ type_: Ident(ident), .. }) && ident.name.value == "#" else {
+  guard c.args[0] is Anonymous({ type_: Ident(ident), .. }) &&
+    ident.name.value == "#" else {
     fail("expected Anonymous Nat")
   }
   guard c.args[1] is Multiplicity(_) else { fail("expected Multiplicity") }
@@ -247,7 +251,8 @@ test "Parser multiple optional args" {
   inspect(c.opt_args.length(), content="2")
   inspect(c.opt_args[0].names[0], content="t")
   inspect(c.opt_args[1].names[0], content="n")
-  guard c.opt_args[1].type_.items[0] is Term(Ident(ident)) && ident.name.value == "#" else {
+  guard c.opt_args[1].type_.items[0] is Term(Ident(ident)) &&
+    ident.name.value == "#" else {
     fail("expected # type for n")
   }
 }
