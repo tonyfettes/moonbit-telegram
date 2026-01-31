@@ -1,0 +1,10 @@
+import {
+  "tonyfettes/telegram/bot",
+  "moonbitlang/async",
+  "moonbitlang/x/sys",
+  "moonbitlang/core/encoding/utf8" as @encoding/utf8,
+}
+
+options(
+  "is-main": true,
+)
