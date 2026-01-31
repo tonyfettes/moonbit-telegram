@@ -43,6 +43,17 @@ EOF
   - `error.mbt` - `TelegramError` suberror type for all API errors
   - Type files: `user.mbt`, `chat.mbt`, `message.mbt`, `update.mbt`, `callback_query.mbt`, `inline_keyboard.mbt`, `bot_command.mbt`, `message_id.mbt`
 
+- `tl/` - TL (Type Language) schema parser and type checker
+  - `tl/ast/` - Abstract syntax tree types with semantic newtype wrappers
+    - `identifiers.mbt` - `LowerIdent`, `UpperIdent`, `ConstructorId` newtypes
+    - `expr.mbt`, `combinator.mbt` - Core AST types
+    - `arbitrary_*.mbt` - Arbitrary trait implementations for property-based testing
+    - `shrink.mbt` - Shrink implementations for QuickCheck
+  - `tl/parser/` - TL schema parser
+  - `tl/typer/` - Type checker with Final/New/Empty validation
+  - `tl/lexer/` - Lexer for TL schemas
+  - `tl/internal/qc/` - Internal QuickCheck utilities (equality helpers)
+
 ### Code Patterns
 
 **Type definitions** follow this pattern:
@@ -112,3 +123,55 @@ Use trailing comma to avoid ambiguous block warning:
 { single_field, }  // correct
 { single_field }   // warning
 ```
+
+### Property-Based Testing with Arbitrary Trait
+
+The TL package uses `@quickcheck.Arbitrary` trait for generating test data:
+
+**Newtype wrappers** for semantic type safety:
+
+```moonbit
+// Lowercase identifier: [a-z][a-z0-9_]*
+pub(all) struct LowerIdent {
+  value : String
+} derive(Eq)
+
+pub impl @quickcheck.Arbitrary for LowerIdent with arbitrary(size, rs) {
+  // Implementation generates valid identifiers
+  let ident : LowerIdent = // ... generation logic
+  ident
+}
+
+pub impl Show for LowerIdent with output(self, logger) {
+  logger.write_string(self.value)  // Display just the value
+}
+```
+
+**Using Arbitrary in tests**:
+
+```moonbit
+// Create a generator from Arbitrary trait
+fn gen_combinator() -> @qc.Gen[@ast.Combinator] {
+  @qc.Gen::new(fn(size, rs) {
+    @quickcheck.Arbitrary::arbitrary(size, rs)
+  })
+}
+
+// Use in tests
+test "property test" {
+  @qc.quick_check(
+    @qc.forall(gen_combinator(), fn(comb) {
+      // Test property
+      true
+    }),
+    max_success=100,
+    max_size=20,
+  )
+}
+```
+
+**Benefits of newtype wrappers**:
+- Type safety: Can't confuse `LowerIdent` with `UpperIdent`
+- Cleaner error messages in tests (Show displays just the value)
+- Centralized validation logic in Arbitrary implementation
+- Automatic shrinking support via Shrink trait
