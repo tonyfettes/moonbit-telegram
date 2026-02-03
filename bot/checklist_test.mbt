@@ -49,7 +49,6 @@ test "ChecklistTasksDone JSON round-trip" {
   let object = ChecklistTasksDone::new()
   let json = @json.to_json(object)
   let _parsed : ChecklistTasksDone = @json.from_json(json)
-
 }
 
 ///|
@@ -57,5 +56,4 @@ test "ChecklistTasksAdded JSON round-trip" {
   let object = ChecklistTasksAdded::new()
   let json = @json.to_json(object)
   let _parsed : ChecklistTasksAdded = @json.from_json(json)
-
 }

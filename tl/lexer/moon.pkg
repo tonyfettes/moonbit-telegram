@@ -3,8 +3,9 @@ import {
   "moonbitlang/core/strconv",
 }
 
-import "test" {
+import {
   "tonyfettes/telegram/tl/ast",
   "tonyfettes/telegram/tl",
   "moonbitlang/quickcheck" as @qc,
-}
+  "moonbitlang/core/quickcheck" as @quickcheck,
+} for "test"

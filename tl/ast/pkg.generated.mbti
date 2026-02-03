@@ -2,7 +2,7 @@
 package "tonyfettes/telegram/tl/ast"
 
 import {
-  "moonbitlang/quickcheck",
+  "moonbitlang/core/quickcheck/splitmix",
 }
 
 // Values
@@ -12,11 +12,12 @@ import {
 // Types and methods
 pub(all) struct AnonymousArg {
   bang : Bool
-  type_ : TypeExpr
+  type_ : Term
 }
 pub impl Eq for AnonymousArg
 pub impl Show for AnonymousArg
-pub impl @quickcheck.Shrink for AnonymousArg
+pub impl @moonbitlang/core/quickcheck.Arbitrary for AnonymousArg
+pub impl @moonbitlang/quickcheck.Shrink for AnonymousArg
 
 pub(all) enum Arg {
   Named(NamedArg)
@@ -26,12 +27,13 @@ pub(all) enum Arg {
 }
 pub impl Eq for Arg
 pub impl Show for Arg
-pub impl @quickcheck.Shrink for Arg
+pub impl @moonbitlang/core/quickcheck.Arbitrary for Arg
+pub impl @moonbitlang/quickcheck.Shrink for Arg
 
 pub(all) struct Combinator {
-  ns : String?
-  name : String
-  id : UInt?
+  ns : LowerIdent?
+  name : LowerIdent
+  id : ConstructorId?
   opt_args : Array[OptionalArg]
   args : Array[Arg]
   result : ResultType
@@ -39,15 +41,26 @@ pub(all) struct Combinator {
 }
 pub impl Eq for Combinator
 pub impl Show for Combinator
-pub impl @quickcheck.Shrink for Combinator
+pub impl @moonbitlang/core/quickcheck.Arbitrary for Combinator
+pub impl @moonbitlang/quickcheck.Shrink for Combinator
 
 pub(all) struct Conditional {
-  var_name : String
+  var_name : LowerIdent
   bit_index : Int?
 }
 pub impl Eq for Conditional
 pub impl Show for Conditional
-pub impl @quickcheck.Shrink for Conditional
+pub impl @moonbitlang/core/quickcheck.Arbitrary for Conditional
+pub impl @moonbitlang/quickcheck.Shrink for Conditional
+
+pub(all) struct ConstructorId {
+  value : UInt
+}
+pub fn ConstructorId::new(value~ : UInt) -> Self
+pub impl Eq for ConstructorId
+pub impl Show for ConstructorId
+pub impl @moonbitlang/core/quickcheck.Arbitrary for ConstructorId
+pub impl @moonbitlang/quickcheck.Shrink for ConstructorId
 
 pub(all) enum Declaration {
   Combinator(Combinator)
@@ -55,15 +68,17 @@ pub(all) enum Declaration {
 }
 pub impl Eq for Declaration
 pub impl Show for Declaration
-pub impl @quickcheck.Shrink for Declaration
+pub impl @moonbitlang/core/quickcheck.Arbitrary for Declaration
+pub impl @moonbitlang/quickcheck.Shrink for Declaration
 
-pub(all) enum Expr {
-  Type(TypeExpr)
-  Nat(NatExpr)
+pub(all) struct Expr {
+  items : Array[Subexpr]
 }
+pub fn Expr::new(items~ : Array[Subexpr]) -> Self
 pub impl Eq for Expr
 pub impl Show for Expr
-pub impl @quickcheck.Shrink for Expr
+pub impl @moonbitlang/core/quickcheck.Arbitrary for Expr
+pub impl @moonbitlang/quickcheck.Shrink for Expr
 
 pub(all) enum FinalDecl {
   New(FinalDeclData)
@@ -72,7 +87,8 @@ pub(all) enum FinalDecl {
 }
 pub impl Eq for FinalDecl
 pub impl Show for FinalDecl
-pub impl @quickcheck.Shrink for FinalDecl
+pub impl @moonbitlang/core/quickcheck.Arbitrary for FinalDecl
+pub impl @moonbitlang/quickcheck.Shrink for FinalDecl
 
 pub(all) struct FinalDeclData {
   type_ident : TypeIdent
@@ -80,55 +96,58 @@ pub(all) struct FinalDeclData {
 }
 pub impl Eq for FinalDeclData
 pub impl Show for FinalDeclData
-pub impl @quickcheck.Shrink for FinalDeclData
+pub impl @moonbitlang/core/quickcheck.Arbitrary for FinalDeclData
+pub impl @moonbitlang/quickcheck.Shrink for FinalDeclData
 
 pub(all) struct GroupedArg {
-  names : Array[String]
+  names : Array[LowerIdent]
   bang : Bool
-  type_ : TypeExpr
+  type_ : Term
 }
 pub impl Eq for GroupedArg
 pub impl Show for GroupedArg
-pub impl @quickcheck.Shrink for GroupedArg
+pub impl @moonbitlang/core/quickcheck.Arbitrary for GroupedArg
+pub impl @moonbitlang/quickcheck.Shrink for GroupedArg
+
+pub(all) struct LowerIdent {
+  value : String
+}
+pub fn LowerIdent::new(value~ : String) -> Self
+pub impl Eq for LowerIdent
+pub impl Show for LowerIdent
+pub impl @moonbitlang/core/quickcheck.Arbitrary for LowerIdent
+pub impl @moonbitlang/quickcheck.Shrink for LowerIdent
 
 pub(all) struct MultiplicityArg {
-  name : String?
-  count : NatExpr
+  name : LowerIdent?
+  count : Term
   args : Array[Arg]
 }
 pub impl Eq for MultiplicityArg
 pub impl Show for MultiplicityArg
-pub impl @quickcheck.Shrink for MultiplicityArg
+pub impl @moonbitlang/core/quickcheck.Arbitrary for MultiplicityArg
+pub impl @moonbitlang/quickcheck.Shrink for MultiplicityArg
 
 pub(all) struct NamedArg {
-  name : String
+  name : LowerIdent
   conditional : Conditional?
   bang : Bool
-  type_ : TypeExpr
+  type_ : Term
 }
 pub impl Eq for NamedArg
 pub impl Show for NamedArg
-pub impl @quickcheck.Shrink for NamedArg
-
-pub(all) enum NatExpr {
-  Const(Int)
-  Var(String)
-  Add(NatExpr, NatExpr)
-  Zero
-  Succ(NatExpr)
-}
-pub impl Eq for NatExpr
-pub impl Show for NatExpr
-pub impl @quickcheck.Shrink for NatExpr
+pub impl @moonbitlang/core/quickcheck.Arbitrary for NamedArg
+pub impl @moonbitlang/quickcheck.Shrink for NamedArg
 
 pub(all) struct OptionalArg {
-  names : Array[String]
+  names : Array[LowerIdent]
   bang : Bool
-  type_ : TypeExpr
+  type_ : Expr
 }
 pub impl Eq for OptionalArg
 pub impl Show for OptionalArg
-pub impl @quickcheck.Shrink for OptionalArg
+pub impl @moonbitlang/core/quickcheck.Arbitrary for OptionalArg
+pub impl @moonbitlang/quickcheck.Shrink for OptionalArg
 
 pub(all) struct Position {
   line : Int
@@ -138,15 +157,16 @@ pub(all) struct Position {
 pub fn Position::new(line~ : Int, column~ : Int, offset~ : Int) -> Self
 pub impl Eq for Position
 pub impl Show for Position
-pub impl @quickcheck.Shrink for Position
+pub impl @moonbitlang/quickcheck.Shrink for Position
 
 pub(all) struct ResultType {
   type_ident : TypeIdent
-  params : Array[Expr]
+  params : Array[Subexpr]
 }
 pub impl Eq for ResultType
 pub impl Show for ResultType
-pub impl @quickcheck.Shrink for ResultType
+pub impl @moonbitlang/core/quickcheck.Arbitrary for ResultType
+pub impl @moonbitlang/quickcheck.Shrink for ResultType
 
 pub(all) struct Schema {
   types : Array[Declaration]
@@ -156,7 +176,8 @@ pub(all) struct Schema {
 pub fn Schema::new() -> Self
 pub impl Eq for Schema
 pub impl Show for Schema
-pub impl @quickcheck.Shrink for Schema
+pub impl @moonbitlang/core/quickcheck.Arbitrary for Schema
+pub impl @moonbitlang/quickcheck.Shrink for Schema
 
 pub(all) struct Span {
   start : Position
@@ -165,29 +186,51 @@ pub(all) struct Span {
 pub fn Span::new(start~ : Position, end~ : Position) -> Self
 pub impl Eq for Span
 pub impl Show for Span
-pub impl @quickcheck.Shrink for Span
+pub impl @moonbitlang/quickcheck.Shrink for Span
 
-pub(all) enum TypeExpr {
-  Ident(TypeIdent)
-  Percent(TypeExpr)
-  Apply(TypeIdent, Array[TypeExpr])
-  Var(String)
-  Nat
+pub(all) enum Subexpr {
+  Term(Term)
+  AddLeft(Int, Subexpr)
+  AddRight(Subexpr, Int)
 }
-pub impl Eq for TypeExpr
-pub impl Show for TypeExpr
-pub impl @quickcheck.Shrink for TypeExpr
+pub impl Eq for Subexpr
+pub impl Show for Subexpr
+pub impl @moonbitlang/core/quickcheck.Arbitrary for Subexpr
+pub impl @moonbitlang/quickcheck.Shrink for Subexpr
+
+pub(all) enum Term {
+  Paren(Expr)
+  Ident(TypeIdent)
+  Var(LowerIdent)
+  NatConst(Int)
+  Percent(Term)
+  Apply(TypeIdent, Array[Expr])
+}
+pub impl Eq for Term
+pub impl Show for Term
+pub impl @moonbitlang/core/quickcheck.Arbitrary for Term
+pub impl @moonbitlang/quickcheck.Shrink for Term
 
 pub(all) struct TypeIdent {
-  ns : String?
-  name : String
+  ns : LowerIdent?
+  name : UpperIdent
 }
-pub fn TypeIdent::namespaced(String, String) -> Self
-pub fn TypeIdent::new(name~ : String, ns? : String) -> Self
-pub fn TypeIdent::simple(String) -> Self
+pub fn TypeIdent::namespaced(LowerIdent, UpperIdent) -> Self
+pub fn TypeIdent::new(name~ : UpperIdent, ns? : LowerIdent) -> Self
+pub fn TypeIdent::simple(UpperIdent) -> Self
 pub impl Eq for TypeIdent
 pub impl Show for TypeIdent
-pub impl @quickcheck.Shrink for TypeIdent
+pub impl @moonbitlang/core/quickcheck.Arbitrary for TypeIdent
+pub impl @moonbitlang/quickcheck.Shrink for TypeIdent
+
+pub(all) struct UpperIdent {
+  value : String
+}
+pub fn UpperIdent::new(value~ : String) -> Self
+pub impl Eq for UpperIdent
+pub impl Show for UpperIdent
+pub impl @moonbitlang/core/quickcheck.Arbitrary for UpperIdent
+pub impl @moonbitlang/quickcheck.Shrink for UpperIdent
 
 // Type aliases
 

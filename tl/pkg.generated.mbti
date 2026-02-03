@@ -48,8 +48,6 @@ pub using @ast {type MultiplicityArg}
 
 pub using @ast {type NamedArg}
 
-pub using @ast {type NatExpr}
-
 pub using @ast {type OptionalArg}
 
 pub using @parser {type ParseError}
@@ -66,15 +64,17 @@ pub using @ast {type Schema}
 
 pub using @ast {type Span}
 
+pub using @ast {type Subexpr}
+
 pub using @typer {type SymbolTable}
 
 pub using @typer {type TLTypeError}
 
+pub using @ast {type Term}
+
 pub using @lexer {type Token}
 
 pub using @lexer {type TokenKind}
-
-pub using @ast {type TypeExpr}
 
 pub using @ast {type TypeIdent}
 

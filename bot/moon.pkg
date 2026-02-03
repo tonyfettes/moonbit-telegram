@@ -6,10 +6,10 @@ import {
   "moonbitlang/core/json" as @_,
 }
 
-import "test" {
+import {
   "moonbitlang/async",
   "moonbitlang/async/socket",
-}
+} for "test"
 
 options(
   targets: { "integration_test.mbt": [ "native" ] },

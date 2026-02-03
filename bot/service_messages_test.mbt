@@ -3,7 +3,6 @@ test "ForumTopicClosed JSON round-trip" {
   let object = ForumTopicClosed::new()
   let json = @json.to_json(object)
   let _parsed : ForumTopicClosed = @json.from_json(json)
-
 }
 
 ///|
@@ -11,7 +10,6 @@ test "ForumTopicReopened JSON round-trip" {
   let object = ForumTopicReopened::new()
   let json = @json.to_json(object)
   let _parsed : ForumTopicReopened = @json.from_json(json)
-
 }
 
 ///|
@@ -19,7 +17,6 @@ test "GeneralForumTopicHidden JSON round-trip" {
   let object = GeneralForumTopicHidden::new()
   let json = @json.to_json(object)
   let _parsed : GeneralForumTopicHidden = @json.from_json(json)
-
 }
 
 ///|
@@ -27,7 +24,6 @@ test "GeneralForumTopicUnhidden JSON round-trip" {
   let object = GeneralForumTopicUnhidden::new()
   let json = @json.to_json(object)
   let _parsed : GeneralForumTopicUnhidden = @json.from_json(json)
-
 }
 
 ///|
@@ -35,7 +31,6 @@ test "VideoChatStarted JSON round-trip" {
   let object = VideoChatStarted::new()
   let json = @json.to_json(object)
   let _parsed : VideoChatStarted = @json.from_json(json)
-
 }
 
 ///|

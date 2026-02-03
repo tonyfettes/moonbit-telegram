@@ -806,7 +806,6 @@ fn Parser::parse_result_type(self : Parser) -> @ast.ResultType raise ParseError 
       params.push(self.parse_subexpr())
     }
     let _ = self.expect(RAngle)
-
   } else {
     while not(self.peek() is Semicolon) && not(self.is_at_end()) {
       params.push(self.parse_subexpr())

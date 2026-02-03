@@ -166,6 +166,7 @@ pub async fn Bot::answer_pre_checkout_query(Self, pre_checkout_query_id~ : Strin
 pub async fn Bot::answer_shipping_query(Self, shipping_query_id~ : String, ok~ : Bool, shipping_options? : Array[ShippingOption], error_message? : String) -> Bool raise TelegramError
 pub async fn Bot::answer_web_app_query(Self, web_app_query_id~ : String, result~ : Json) -> Json raise TelegramError
 pub async fn Bot::approve_chat_join_request(Self, chat_id~ : Int64, user_id~ : Int64) -> Bool raise TelegramError
+pub async fn Bot::approve_suggested_post(Self, chat_id~ : Int64, user_id~ : Int64, inline_message_id? : String, message_id? : Int) -> Bool raise TelegramError
 pub async fn Bot::ban_chat_member(Self, chat_id~ : Int64, user_id~ : Int64, until_date? : Int, revoke_messages? : Bool) -> Bool raise TelegramError
 pub async fn Bot::close_forum_topic(Self, chat_id~ : Int64, message_thread_id~ : Int) -> Bool raise TelegramError
 pub async fn Bot::close_general_forum_topic(Self, chat_id~ : Int64) -> Bool raise TelegramError
@@ -174,6 +175,7 @@ pub async fn Bot::create_chat_invite_link(Self, chat_id~ : Int64, name? : String
 pub async fn Bot::create_forum_topic(Self, chat_id~ : Int64, name~ : String, icon_color? : Int, icon_custom_emoji_id? : String) -> Json raise TelegramError
 pub async fn Bot::create_invoice_link(Self, title~ : String, description~ : String, payload~ : String, currency~ : String, prices~ : Array[LabeledPrice], provider_token? : String, max_tip_amount? : Int, suggested_tip_amounts? : Array[Int], provider_data? : String, photo_url? : String, photo_size? : Int, photo_width? : Int, photo_height? : Int, need_name? : Bool, need_phone_number? : Bool, need_email? : Bool, need_shipping_address? : Bool, send_phone_number_to_provider? : Bool, send_email_to_provider? : Bool, is_flexible? : Bool, subscription_period? : Int, business_connection_id? : String) -> String raise TelegramError
 pub async fn Bot::decline_chat_join_request(Self, chat_id~ : Int64, user_id~ : Int64) -> Bool raise TelegramError
+pub async fn Bot::decline_suggested_post(Self, chat_id~ : Int64, user_id~ : Int64, inline_message_id? : String, message_id? : Int) -> Bool raise TelegramError
 pub async fn Bot::delete_chat_photo(Self, chat_id~ : Int64) -> Bool raise TelegramError
 pub async fn Bot::delete_forum_topic(Self, chat_id~ : Int64, message_thread_id~ : Int) -> Bool raise TelegramError
 pub async fn Bot::delete_message(Self, chat_id~ : Int64, message_id~ : Int) -> Bool raise TelegramError
@@ -186,6 +188,7 @@ pub async fn Bot::edit_chat_invite_link(Self, chat_id~ : Int64, invite_link~ : S
 pub async fn Bot::edit_forum_topic(Self, chat_id~ : Int64, message_thread_id~ : Int, name? : String, icon_custom_emoji_id? : String) -> Bool raise TelegramError
 pub async fn Bot::edit_general_forum_topic(Self, chat_id~ : Int64, name~ : String) -> Bool raise TelegramError
 pub async fn Bot::edit_message_caption(Self, business_connection_id? : String, chat_id? : Int64, message_id? : Int, inline_message_id? : String, caption? : String, parse_mode? : String, caption_entities? : Array[MessageEntity], show_caption_above_media? : Bool, reply_markup? : InlineKeyboardMarkup) -> Message raise TelegramError
+pub async fn Bot::edit_message_checklist(Self, business_connection_id? : String, chat_id? : Int64, message_id? : Int, inline_message_id? : String, reply_to_message_id? : Int, checklist~ : InputChecklist) -> Message raise TelegramError
 pub async fn Bot::edit_message_live_location(Self, latitude~ : Double, longitude~ : Double, business_connection_id? : String, chat_id? : Int64, message_id? : Int, inline_message_id? : String, live_period? : Int, horizontal_accuracy? : Double, heading? : Int, proximity_alert_radius? : Int, reply_markup? : InlineKeyboardMarkup) -> Message raise TelegramError
 pub async fn Bot::edit_message_media(Self, media~ : Json, business_connection_id? : String, chat_id? : Int64, message_id? : Int, inline_message_id? : String, reply_markup? : InlineKeyboardMarkup) -> Message raise TelegramError
 pub async fn Bot::edit_message_reply_markup(Self, chat_id~ : Int64, message_id~ : Int, reply_markup? : InlineKeyboardMarkup) -> Message raise TelegramError
@@ -195,6 +198,7 @@ pub async fn Bot::forward_message(Self, chat_id~ : Int64, from_chat_id~ : Int64,
 pub async fn Bot::forward_messages(Self, chat_id~ : Int64, from_chat_id~ : Int64, message_ids~ : Array[Int], message_thread_id? : Int, disable_notification? : Bool, protect_content? : Bool) -> Array[MessageId] raise TelegramError
 pub async fn Bot::get_chat(Self, chat_id~ : Int64) -> ChatFullInfo raise TelegramError
 pub async fn Bot::get_chat_administrators(Self, chat_id~ : ChatId) -> Array[Json] raise TelegramError
+pub async fn Bot::get_chat_gifts(Self, chat_id~ : ChatId, offset? : Int, limit? : Int) -> Gifts raise TelegramError
 pub async fn Bot::get_chat_member(Self, chat_id~ : ChatId, user_id~ : Int64) -> Json raise TelegramError
 pub async fn Bot::get_chat_member_count(Self, chat_id~ : ChatId) -> Int raise TelegramError
 pub async fn Bot::get_chat_menu_button(Self, chat_id? : Int64) -> Json raise TelegramError
@@ -207,10 +211,12 @@ pub async fn Bot::get_my_commands(Self, scope? : Json, language_code? : String) 
 pub async fn Bot::get_my_description(Self, language_code? : String) -> Json raise TelegramError
 pub async fn Bot::get_my_name(Self, language_code? : String) -> Json raise TelegramError
 pub async fn Bot::get_my_short_description(Self, language_code? : String) -> Json raise TelegramError
+pub async fn Bot::get_my_star_balance(Self) -> StarBalance raise TelegramError
 pub async fn Bot::get_sticker_set(Self, name~ : String) -> StickerSet raise TelegramError
 pub async fn Bot::get_updates(Self, offset? : Int, limit? : Int, timeout? : Int, allowed_updates? : Array[String]) -> Array[Update] raise TelegramError
+pub async fn Bot::get_user_gifts(Self, offset? : Int, limit? : Int) -> Gifts raise TelegramError
 pub async fn Bot::get_user_profile_photos(Self, user_id~ : Int64, offset? : Int, limit? : Int) -> Json raise TelegramError
-pub async fn Bot::get_webhook_info(Self) -> Json raise TelegramError
+pub async fn Bot::get_webhook_info(Self) -> WebhookInfo raise TelegramError
 pub async fn Bot::hide_general_forum_topic(Self, chat_id~ : Int64) -> Bool raise TelegramError
 pub async fn Bot::leave_chat(Self, chat_id~ : Int64) -> Bool raise TelegramError
 pub fn Bot::new(token~ : String, base_url? : String) -> Self
@@ -218,11 +224,13 @@ pub async fn Bot::pin_chat_message(Self, chat_id~ : Int64, message_id~ : Int, bu
 pub async fn Bot::promote_chat_member(Self, chat_id~ : Int64, user_id~ : Int64, is_anonymous? : Bool, can_manage_chat? : Bool, can_delete_messages? : Bool, can_manage_video_chats? : Bool, can_restrict_members? : Bool, can_promote_members? : Bool, can_change_info? : Bool, can_invite_users? : Bool, can_post_stories? : Bool, can_edit_stories? : Bool, can_delete_stories? : Bool, can_post_messages? : Bool, can_edit_messages? : Bool, can_pin_messages? : Bool, can_manage_topics? : Bool) -> Bool raise TelegramError
 pub async fn Bot::reopen_forum_topic(Self, chat_id~ : Int64, message_thread_id~ : Int) -> Bool raise TelegramError
 pub async fn Bot::reopen_general_forum_topic(Self, chat_id~ : Int64) -> Bool raise TelegramError
+pub async fn Bot::repost_story(Self, chat_id~ : ChatId, from_chat_id~ : ChatId, story_id~ : Int, message_thread_id? : Int, direct_messages_topic_id? : Int, business_connection_id? : String, text? : String, parse_mode? : String, entities? : Array[MessageEntity]) -> MessageId raise TelegramError
 pub async fn Bot::restrict_chat_member(Self, chat_id~ : Int64, user_id~ : Int64, permissions~ : ChatPermissions, use_independent_chat_permissions? : Bool, until_date? : Int) -> Bool raise TelegramError
 pub async fn Bot::revoke_chat_invite_link(Self, chat_id~ : Int64, invite_link~ : String) -> Json raise TelegramError
 pub async fn Bot::send_animation(Self, chat_id~ : Int64, animation~ : String, business_connection_id? : String, message_thread_id? : Int, duration? : Int, width? : Int, height? : Int, thumbnail? : String, caption? : String, parse_mode? : String, caption_entities? : Array[MessageEntity], show_caption_above_media? : Bool, has_spoiler? : Bool, disable_notification? : Bool, protect_content? : Bool, allow_paid_broadcast? : Bool, message_effect_id? : String, reply_parameters? : ReplyParameters, reply_markup? : InlineKeyboardMarkup) -> Message raise TelegramError
 pub async fn Bot::send_audio(Self, chat_id~ : Int64, audio~ : String, business_connection_id? : String, message_thread_id? : Int, caption? : String, parse_mode? : String, caption_entities? : Array[MessageEntity], duration? : Int, performer? : String, title? : String, thumbnail? : String, disable_notification? : Bool, protect_content? : Bool, allow_paid_broadcast? : Bool, message_effect_id? : String, reply_parameters? : ReplyParameters, reply_markup? : InlineKeyboardMarkup) -> Message raise TelegramError
 pub async fn Bot::send_chat_action(Self, chat_id~ : Int64, action~ : String, business_connection_id? : String, message_thread_id? : Int) -> Bool raise TelegramError
+pub async fn Bot::send_checklist(Self, business_connection_id? : String, chat_id~ : Int64, message_thread_id? : Int, checklist~ : InputChecklist) -> Message raise TelegramError
 pub async fn Bot::send_contact(Self, chat_id~ : Int64, phone_number~ : String, first_name~ : String, business_connection_id? : String, message_thread_id? : Int, last_name? : String, vcard? : String, disable_notification? : Bool, protect_content? : Bool, allow_paid_broadcast? : Bool, message_effect_id? : String, reply_parameters? : ReplyParameters, reply_markup? : InlineKeyboardMarkup) -> Message raise TelegramError
 pub async fn Bot::send_dice(Self, chat_id~ : Int64, business_connection_id? : String, message_thread_id? : Int, emoji? : String, disable_notification? : Bool, protect_content? : Bool, allow_paid_broadcast? : Bool, message_effect_id? : String, reply_parameters? : ReplyParameters, reply_markup? : InlineKeyboardMarkup) -> Message raise TelegramError
 pub async fn Bot::send_document(Self, chat_id~ : Int64, document~ : String, business_connection_id? : String, message_thread_id? : Int, thumbnail? : String, caption? : String, parse_mode? : String, caption_entities? : Array[MessageEntity], disable_content_type_detection? : Bool, disable_notification? : Bool, protect_content? : Bool, allow_paid_broadcast? : Bool, message_effect_id? : String, reply_parameters? : ReplyParameters, reply_markup? : InlineKeyboardMarkup) -> Message raise TelegramError
@@ -230,6 +238,7 @@ pub async fn Bot::send_game(Self, chat_id~ : Int64, game_short_name~ : String, b
 pub async fn Bot::send_invoice(Self, chat_id~ : Int64, title~ : String, description~ : String, payload~ : String, currency~ : String, prices~ : Array[LabeledPrice], provider_token? : String, message_thread_id? : Int, max_tip_amount? : Int, suggested_tip_amounts? : Array[Int], start_parameter? : String, provider_data? : String, photo_url? : String, photo_size? : Int, photo_width? : Int, photo_height? : Int, need_name? : Bool, need_phone_number? : Bool, need_email? : Bool, need_shipping_address? : Bool, send_phone_number_to_provider? : Bool, send_email_to_provider? : Bool, is_flexible? : Bool, disable_notification? : Bool, protect_content? : Bool, allow_paid_broadcast? : Bool, message_effect_id? : String, reply_parameters? : ReplyParameters, reply_markup? : InlineKeyboardMarkup) -> Message raise TelegramError
 pub async fn Bot::send_location(Self, chat_id~ : Int64, latitude~ : Double, longitude~ : Double, business_connection_id? : String, message_thread_id? : Int, horizontal_accuracy? : Double, live_period? : Int, heading? : Int, proximity_alert_radius? : Int, disable_notification? : Bool, protect_content? : Bool, allow_paid_broadcast? : Bool, message_effect_id? : String, reply_parameters? : ReplyParameters, reply_markup? : InlineKeyboardMarkup) -> Message raise TelegramError
 pub async fn Bot::send_message(Self, chat_id~ : Int64, text~ : String, parse_mode? : String, disable_notification? : Bool, reply_to_message_id? : Int, reply_markup? : InlineKeyboardMarkup) -> Message raise TelegramError
+pub async fn Bot::send_message_draft(Self, chat_id~ : ChatId, text~ : String, message_thread_id? : Int, direct_messages_topic_id? : Int, business_connection_id? : String, parse_mode? : String, entities? : Array[MessageEntity], link_preview_options? : LinkPreviewOptions, disable_web_page_preview? : Bool) -> MessageId raise TelegramError
 pub async fn Bot::send_photo(Self, chat_id~ : Int64, photo~ : String, business_connection_id? : String, message_thread_id? : Int, caption? : String, parse_mode? : String, caption_entities? : Array[MessageEntity], show_caption_above_media? : Bool, has_spoiler? : Bool, disable_notification? : Bool, protect_content? : Bool, allow_paid_broadcast? : Bool, message_effect_id? : String, reply_parameters? : ReplyParameters, reply_markup? : InlineKeyboardMarkup) -> Message raise TelegramError
 pub async fn Bot::send_poll(Self, chat_id~ : Int64, question~ : String, options~ : Array[InputPollOption], business_connection_id? : String, message_thread_id? : Int, question_parse_mode? : String, question_entities? : Array[MessageEntity], is_anonymous? : Bool, type_? : String, allows_multiple_answers? : Bool, correct_option_id? : Int, explanation? : String, explanation_parse_mode? : String, explanation_entities? : Array[MessageEntity], open_period? : Int, close_date? : Int, is_closed? : Bool, disable_notification? : Bool, protect_content? : Bool, allow_paid_broadcast? : Bool, message_effect_id? : String, reply_parameters? : ReplyParameters, reply_markup? : InlineKeyboardMarkup) -> Message raise TelegramError
 pub async fn Bot::send_sticker(Self, chat_id~ : Int64, sticker~ : String, business_connection_id? : String, message_thread_id? : Int, emoji? : String, disable_notification? : Bool, protect_content? : Bool, allow_paid_broadcast? : Bool, message_effect_id? : String, reply_parameters? : ReplyParameters, reply_markup? : InlineKeyboardMarkup) -> Message raise TelegramError
@@ -678,6 +687,43 @@ pub impl Show for ChatType
 pub impl @tonyfettes/json.FromJson for ChatType
 pub impl @tonyfettes/json.ToJson for ChatType
 
+pub struct Checklist {
+  header : String
+  tasks : Array[ChecklistTask]
+}
+pub fn Checklist::new(header~ : String, tasks~ : Array[ChecklistTask]) -> Self
+pub impl Eq for Checklist
+pub impl Show for Checklist
+pub impl @tonyfettes/json.FromJson for Checklist
+pub impl @tonyfettes/json.ToJson for Checklist
+
+pub struct ChecklistTask {
+  id : Int
+  text : String
+  is_done : Bool
+}
+pub fn ChecklistTask::new(id~ : Int, text~ : String, is_done~ : Bool) -> Self
+pub impl Eq for ChecklistTask
+pub impl Show for ChecklistTask
+pub impl @tonyfettes/json.FromJson for ChecklistTask
+pub impl @tonyfettes/json.ToJson for ChecklistTask
+
+pub struct ChecklistTasksAdded {
+}
+pub fn ChecklistTasksAdded::new() -> Self
+pub impl Eq for ChecklistTasksAdded
+pub impl Show for ChecklistTasksAdded
+pub impl @tonyfettes/json.FromJson for ChecklistTasksAdded
+pub impl @tonyfettes/json.ToJson for ChecklistTasksAdded
+
+pub struct ChecklistTasksDone {
+}
+pub fn ChecklistTasksDone::new() -> Self
+pub impl Eq for ChecklistTasksDone
+pub impl Show for ChecklistTasksDone
+pub impl @tonyfettes/json.FromJson for ChecklistTasksDone
+pub impl @tonyfettes/json.ToJson for ChecklistTasksDone
+
 pub struct ChosenInlineResult {
   result_id : String
   from : User
@@ -713,6 +759,17 @@ pub impl Eq for Dice
 pub impl Show for Dice
 pub impl @tonyfettes/json.FromJson for Dice
 pub impl @tonyfettes/json.ToJson for Dice
+
+pub struct DirectMessagesTopic {
+  id : Int
+  name : String
+  icon_color : Int
+}
+pub fn DirectMessagesTopic::new(id~ : Int, name~ : String, icon_color~ : Int) -> Self
+pub impl Eq for DirectMessagesTopic
+pub impl Show for DirectMessagesTopic
+pub impl @tonyfettes/json.FromJson for DirectMessagesTopic
+pub impl @tonyfettes/json.ToJson for DirectMessagesTopic
 
 pub struct Document {
   file_id : String
@@ -913,12 +970,42 @@ pub struct Gift {
   star_count : Int
   total_count : Int?
   remaining_count : Int?
+  publisher_chat : Chat?
+  colors : UniqueGiftColors?
+  background : GiftBackground?
+  unique_gift_variant_count : Int?
+  unique_gift_number : Int?
+  gifts_from_channels : Bool?
+  is_premium : Bool?
+  has_colors : Bool?
 }
-pub fn Gift::new(id~ : String, sticker~ : StickerPlaceholder, star_count~ : Int, total_count? : Int, remaining_count? : Int) -> Self
+pub fn Gift::new(id~ : String, sticker~ : StickerPlaceholder, star_count~ : Int, total_count? : Int, remaining_count? : Int, publisher_chat? : Chat, colors? : UniqueGiftColors, background? : GiftBackground, unique_gift_variant_count? : Int, unique_gift_number? : Int, gifts_from_channels? : Bool, is_premium? : Bool, has_colors? : Bool) -> Self
 pub impl Eq for Gift
 pub impl Show for Gift
 pub impl @tonyfettes/json.FromJson for Gift
 pub impl @tonyfettes/json.ToJson for Gift
+
+pub struct GiftBackground {
+  type_ : String
+  fill_color : Int?
+  gradient_top_color : Int?
+  gradient_bottom_color : Int?
+}
+pub fn GiftBackground::new(type_~ : String, fill_color? : Int, gradient_top_color? : Int, gradient_bottom_color? : Int) -> Self
+pub impl Eq for GiftBackground
+pub impl Show for GiftBackground
+pub impl @tonyfettes/json.FromJson for GiftBackground
+pub impl @tonyfettes/json.ToJson for GiftBackground
+
+pub struct GiftInfo {
+  gift : Gift
+  from : User?
+}
+pub fn GiftInfo::new(gift~ : Gift, from? : User) -> Self
+pub impl Eq for GiftInfo
+pub impl Show for GiftInfo
+pub impl @tonyfettes/json.FromJson for GiftInfo
+pub impl @tonyfettes/json.ToJson for GiftInfo
 
 pub struct Gifts {
   gifts : Array[Gift]
@@ -1404,6 +1491,25 @@ pub impl Show for InlineQueryResultsButton
 pub impl @tonyfettes/json.FromJson for InlineQueryResultsButton
 pub impl @tonyfettes/json.ToJson for InlineQueryResultsButton
 
+pub struct InputChecklist {
+  header : String
+  tasks : Array[InputChecklistTask]
+}
+pub fn InputChecklist::new(header~ : String, tasks~ : Array[InputChecklistTask]) -> Self
+pub impl Eq for InputChecklist
+pub impl Show for InputChecklist
+pub impl @tonyfettes/json.FromJson for InputChecklist
+pub impl @tonyfettes/json.ToJson for InputChecklist
+
+pub struct InputChecklistTask {
+  text : String
+}
+pub fn InputChecklistTask::new(text~ : String) -> Self
+pub impl Eq for InputChecklistTask
+pub impl Show for InputChecklistTask
+pub impl @tonyfettes/json.FromJson for InputChecklistTask
+pub impl @tonyfettes/json.ToJson for InputChecklistTask
+
 pub struct InputContactMessageContent {
   phone_number : String
   first_name : String
@@ -1678,8 +1784,14 @@ pub struct Message {
   text : String?
   entities : Array[MessageEntity]?
   reply_to_message : Message?
+  message_thread_id : Int?
+  is_topic_message : Bool?
+  direct_messages_topic : DirectMessagesTopic?
+  gift_upgrade_sent : GiftInfo?
+  gift_id : String?
+  is_from_blockchain : Bool?
 }
-pub fn Message::new(message_id~ : Int, from? : User, date~ : Int, chat~ : Chat, text? : String, entities? : Array[MessageEntity], reply_to_message? : Self) -> Self
+pub fn Message::new(message_id~ : Int, from? : User, date~ : Int, chat~ : Chat, text? : String, entities? : Array[MessageEntity], reply_to_message? : Self, message_thread_id? : Int, is_topic_message? : Bool, direct_messages_topic? : DirectMessagesTopic, gift_upgrade_sent? : GiftInfo, gift_id? : String, is_from_blockchain? : Bool) -> Self
 pub impl Eq for Message
 pub impl Show for Message
 pub impl @tonyfettes/json.FromJson for Message
@@ -2143,6 +2255,15 @@ pub impl Show for ShippingOption
 pub impl @tonyfettes/json.FromJson for ShippingOption
 pub impl @tonyfettes/json.ToJson for ShippingOption
 
+pub struct StarBalance {
+  balance : Int
+}
+pub fn StarBalance::new(balance~ : Int) -> Self
+pub impl Eq for StarBalance
+pub impl Show for StarBalance
+pub impl @tonyfettes/json.FromJson for StarBalance
+pub impl @tonyfettes/json.ToJson for StarBalance
+
 pub struct Sticker {
   file_id : String
   file_unique_id : String
@@ -2216,6 +2337,78 @@ pub impl Show for SuccessfulPayment
 pub impl @tonyfettes/json.FromJson for SuccessfulPayment
 pub impl @tonyfettes/json.ToJson for SuccessfulPayment
 
+pub struct SuggestedPostApprovalFailed {
+  user : User
+  suggested_post_info : SuggestedPostInfo
+}
+pub fn SuggestedPostApprovalFailed::new(user~ : User, suggested_post_info~ : SuggestedPostInfo) -> Self
+pub impl Eq for SuggestedPostApprovalFailed
+pub impl Show for SuggestedPostApprovalFailed
+pub impl @tonyfettes/json.FromJson for SuggestedPostApprovalFailed
+pub impl @tonyfettes/json.ToJson for SuggestedPostApprovalFailed
+
+pub struct SuggestedPostApproved {
+  user : User
+  suggested_post_info : SuggestedPostInfo
+}
+pub fn SuggestedPostApproved::new(user~ : User, suggested_post_info~ : SuggestedPostInfo) -> Self
+pub impl Eq for SuggestedPostApproved
+pub impl Show for SuggestedPostApproved
+pub impl @tonyfettes/json.FromJson for SuggestedPostApproved
+pub impl @tonyfettes/json.ToJson for SuggestedPostApproved
+
+pub struct SuggestedPostDeclined {
+  user : User
+  suggested_post_info : SuggestedPostInfo
+}
+pub fn SuggestedPostDeclined::new(user~ : User, suggested_post_info~ : SuggestedPostInfo) -> Self
+pub impl Eq for SuggestedPostDeclined
+pub impl Show for SuggestedPostDeclined
+pub impl @tonyfettes/json.FromJson for SuggestedPostDeclined
+pub impl @tonyfettes/json.ToJson for SuggestedPostDeclined
+
+pub struct SuggestedPostInfo {
+  suggested_post_parameters : SuggestedPostParameters?
+  is_approved : Bool
+  is_declined : Bool
+  is_paid : Bool
+}
+pub fn SuggestedPostInfo::new(suggested_post_parameters? : SuggestedPostParameters, is_approved~ : Bool, is_declined~ : Bool, is_paid~ : Bool) -> Self
+pub impl Eq for SuggestedPostInfo
+pub impl Show for SuggestedPostInfo
+pub impl @tonyfettes/json.FromJson for SuggestedPostInfo
+pub impl @tonyfettes/json.ToJson for SuggestedPostInfo
+
+pub struct SuggestedPostPaid {
+  user : User
+  suggested_post_info : SuggestedPostInfo
+}
+pub fn SuggestedPostPaid::new(user~ : User, suggested_post_info~ : SuggestedPostInfo) -> Self
+pub impl Eq for SuggestedPostPaid
+pub impl Show for SuggestedPostPaid
+pub impl @tonyfettes/json.FromJson for SuggestedPostPaid
+pub impl @tonyfettes/json.ToJson for SuggestedPostPaid
+
+pub struct SuggestedPostParameters {
+  text : String?
+  link_preview_options : LinkPreviewOptions?
+  is_disabled : Bool?
+}
+pub fn SuggestedPostParameters::new(text? : String, link_preview_options? : LinkPreviewOptions, is_disabled? : Bool) -> Self
+pub impl Eq for SuggestedPostParameters
+pub impl Show for SuggestedPostParameters
+pub impl @tonyfettes/json.FromJson for SuggestedPostParameters
+pub impl @tonyfettes/json.ToJson for SuggestedPostParameters
+
+pub struct SuggestedPostPrice {
+  star_count : Int
+}
+pub fn SuggestedPostPrice::new(star_count~ : Int) -> Self
+pub impl Eq for SuggestedPostPrice
+pub impl Show for SuggestedPostPrice
+pub impl @tonyfettes/json.FromJson for SuggestedPostPrice
+pub impl @tonyfettes/json.ToJson for SuggestedPostPrice
+
 pub struct SwitchInlineQueryChosenChat {
   query : String?
   allow_user_chats : Bool?
@@ -2240,6 +2433,33 @@ pub impl Eq for TextQuote
 pub impl Show for TextQuote
 pub impl @tonyfettes/json.FromJson for TextQuote
 pub impl @tonyfettes/json.ToJson for TextQuote
+
+pub struct UniqueGiftColors {
+  background_icon_color : Int
+  text_color : Int
+  hint_color : Int
+  link_color : Int
+  button_color : Int
+  button_text_color : Int
+}
+pub fn UniqueGiftColors::new(background_icon_color~ : Int, text_color~ : Int, hint_color~ : Int, link_color~ : Int, button_color~ : Int, button_text_color~ : Int) -> Self
+pub impl Eq for UniqueGiftColors
+pub impl Show for UniqueGiftColors
+pub impl @tonyfettes/json.FromJson for UniqueGiftColors
+pub impl @tonyfettes/json.ToJson for UniqueGiftColors
+
+pub struct UniqueGiftInfo {
+  next_transfer_date : Int?
+  last_resale_amount : Int?
+  origin : String?
+  gift_id : String
+  is_from_blockchain : Bool?
+}
+pub fn UniqueGiftInfo::new(gift_id~ : String, next_transfer_date? : Int, last_resale_amount? : Int, origin? : String, is_from_blockchain? : Bool) -> Self
+pub impl Eq for UniqueGiftInfo
+pub impl Show for UniqueGiftInfo
+pub impl @tonyfettes/json.FromJson for UniqueGiftInfo
+pub impl @tonyfettes/json.ToJson for UniqueGiftInfo
 
 pub struct Update {
   update_id : Int
@@ -2391,6 +2611,23 @@ pub impl Eq for WebAppInfo
 pub impl Show for WebAppInfo
 pub impl @tonyfettes/json.FromJson for WebAppInfo
 pub impl @tonyfettes/json.ToJson for WebAppInfo
+
+pub struct WebhookInfo {
+  url : String
+  has_custom_certificate : Bool
+  pending_update_count : Int
+  ip_address : String?
+  last_error_date : Int?
+  last_error_message : String?
+  last_synchronization_error_date : Int?
+  max_connections : Int?
+  allowed_updates : Array[String]?
+}
+pub fn WebhookInfo::new(url~ : String, has_custom_certificate~ : Bool, pending_update_count~ : Int, ip_address? : String, last_error_date? : Int, last_error_message? : String, last_synchronization_error_date? : Int, max_connections? : Int, allowed_updates? : Array[String]) -> Self
+pub impl Eq for WebhookInfo
+pub impl Show for WebhookInfo
+pub impl @tonyfettes/json.FromJson for WebhookInfo
+pub impl @tonyfettes/json.ToJson for WebhookInfo
 
 pub struct WriteAccessAllowed {
   from_request : Bool?

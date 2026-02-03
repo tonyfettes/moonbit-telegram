@@ -1,4 +1,5 @@
 // Helper generator using Arbitrary trait
+
 ///|
 fn gen_schema() -> @qc.Gen[@ast.Schema] {
   @qc.Gen::new(fn(size, rs) { @quickcheck.Arbitrary::arbitrary(size, rs) })

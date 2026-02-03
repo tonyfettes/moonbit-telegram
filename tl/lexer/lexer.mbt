@@ -68,7 +68,6 @@ fn Lexer::advance(self : Lexer) -> Char? {
 fn Lexer::skip_whitespace(self : Lexer) -> Unit {
   while self.peek() is Some(' ' | '\t' | '\n' | '\r') {
     let _ = self.advance()
-
   }
 }
 
@@ -110,7 +109,6 @@ fn Lexer::scan_identifier(self : Lexer) -> Token {
   while self.peek() is Some(ch) && is_ident_continue(ch) {
     buf.write_char(ch)
     let _ = self.advance()
-
   }
   let ident = buf.to_string()
   // Check for keywords
@@ -140,12 +138,10 @@ fn Lexer::scan_number(self : Lexer) -> Token raise LexError {
   if self.peek() is Some('-') {
     buf.write_char('-')
     let _ = self.advance()
-
   }
   while self.peek() is Some(ch) && is_digit(ch) {
     buf.write_char(ch)
     let _ = self.advance()
-
   }
   let num_str = buf.to_string()
   let result : Result[Int, _] = try? @strconv.parse_int(num_str)
@@ -165,7 +161,6 @@ fn Lexer::scan_hex_number(
   while self.peek() is Some(ch) && is_hex_digit(ch) {
     buf.write_char(ch)
     let _ = self.advance()
-
   }
   let hex_str = buf.to_string()
   if hex_str.is_empty() {
@@ -186,7 +181,6 @@ fn Lexer::scan_line_comment(self : Lexer, start : @ast.Position) -> Token {
   while self.peek() is Some(ch) && ch != '\n' {
     buf.write_char(ch)
     let _ = self.advance()
-
   }
   { kind: TokenKind::LineComment(buf.to_string()), span: self.make_span(start) }
 }
@@ -209,7 +203,6 @@ fn Lexer::scan_block_comment(
     }
     buf.write_char(ch)
     let _ = self.advance()
-
   }
   {
     kind: TokenKind::BlockComment(buf.to_string()),

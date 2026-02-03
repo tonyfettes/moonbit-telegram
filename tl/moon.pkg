@@ -6,12 +6,12 @@ import {
   "tonyfettes/telegram/tl/typer",
 }
 
-import "test" {
+import {
   "tonyfettes/telegram/tl/ast",
   "tonyfettes/telegram/tl/typer",
   "moonbitlang/async",
   "moonbitlang/async/fs",
-}
+} for "test"
 
 options(
   targets: { "integration_test.mbt": [ "native" ] },

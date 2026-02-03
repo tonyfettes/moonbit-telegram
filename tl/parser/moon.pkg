@@ -4,9 +4,10 @@ import {
   "moonbitlang/core/error" as @_,
 }
 
-import "test" {
+import {
   "tonyfettes/telegram/tl/ast",
   "tonyfettes/telegram/tl/lexer",
   "tonyfettes/telegram/tl",
   "moonbitlang/quickcheck" as @qc,
-}
+  "moonbitlang/core/quickcheck" as @quickcheck,
+} for "test"
