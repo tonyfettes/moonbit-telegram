@@ -1,0 +1,8 @@
+import {
+  "tonyfettes/dl" as @dl,
+  "tonyfettes/c" as @c,
+  "moonbitlang/core/encoding/utf8" as @encoding/utf8,
+  "tonyfettes/platform" as @platform,
+  "tonyfettes/os",
+  "moonbitlang/x/path",
+}

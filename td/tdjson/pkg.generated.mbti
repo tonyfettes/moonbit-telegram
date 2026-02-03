@@ -1,0 +1,22 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "tonyfettes/telegram/td/tdjson"
+
+// Values
+pub fn create_client_id() -> Int raise TdjsonError
+
+pub fn execute(Json) -> String? raise TdjsonError
+
+pub fn receive(Double) -> String? raise TdjsonError
+
+pub fn send(Int, Json) -> Unit raise TdjsonError
+
+// Errors
+type TdjsonError
+pub impl Show for TdjsonError
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+
